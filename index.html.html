@@ -1,0 +1,4075 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08111f" id="themeColorMeta" />
+  <title>Student Portal - Secure Recordings</title>
+
+  <script>
+    (() => {
+      try {
+        const savedTheme = localStorage.getItem("portal-theme");
+        document.documentElement.dataset.theme =
+          savedTheme === "light" ? "light" : "dark";
+      } catch {
+        document.documentElement.dataset.theme = "dark";
+      }
+    })();
+
+    (() => {
+      try {
+        const unlocked = sessionStorage.getItem("portal-admin-unlocked") === "1";
+        const hit = sessionStorage.getItem("portal-devtools-hit") === "1";
+        const reason =
+          sessionStorage.getItem("portal-devtools-reason") ||
+          "Protected inspect action detected.";
+
+        window.__PORTAL_FORCE_EXIT__ = !unlocked && hit
+          ? { active: true, reason }
+          : { active: false, reason: "" };
+
+        if (hit) {
+          sessionStorage.removeItem("portal-devtools-hit");
+          sessionStorage.removeItem("portal-devtools-reason");
+        }
+      } catch {
+        window.__PORTAL_FORCE_EXIT__ = { active: false, reason: "" };
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --page-bg:
+        radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.18), transparent 22%),
+        radial-gradient(circle at 85% 12%, rgba(239, 68, 68, 0.12), transparent 18%),
+        radial-gradient(circle at 50% 110%, rgba(16, 185, 129, 0.12), transparent 25%),
+        linear-gradient(145deg, #020617 0%, #08111f 30%, #0f172a 65%, #131c31 100%);
+
+      --glass-bg: linear-gradient(180deg, rgba(10, 17, 32, 0.68), rgba(8, 14, 28, 0.52));
+      --surface-card:
+        linear-gradient(180deg, rgba(28, 39, 66, 0.78), rgba(10, 16, 28, 0.92)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 38%);
+      --surface-alt: rgba(255, 255, 255, 0.055);
+      --surface-input: rgba(9, 15, 27, 0.72);
+      --border: rgba(255, 255, 255, 0.12);
+      --border-soft: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --chip-bg: rgba(255, 255, 255, 0.07);
+      --chip-text: #e2e8f0;
+      --icon-bg: rgba(255, 255, 255, 0.08);
+      --tab-bg: linear-gradient(180deg, rgba(20, 31, 52, 0.85), rgba(10, 16, 29, 0.82));
+      --tab-text: #e2e8f0;
+      --tab-subtext: #cbd5e1;
+      --badge-bg: rgba(8, 15, 27, 0.82);
+      --search-icon: #93c5fd;
+      --loader-bg: rgba(4, 9, 20, 0.84);
+      --loader-track: rgba(255, 255, 255, 0.14);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      --shadow-soft: 0 14px 35px rgba(0, 0, 0, 0.22);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
+
+      --et-1: #ef4444;
+      --et-2: #f97316;
+      --it-1: #2563eb;
+      --it-2: #06b6d4;
+      --sft-1: #10b981;
+      --sft-2: #8b5cf6;
+      --maker-1: #38bdf8;
+      --maker-2: #8b5cf6;
+      --maker-3: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    :root[data-theme="light"] {
+      --page-bg:
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.14), transparent 22%),
+        radial-gradient(circle at 85% 12%, rgba(244, 63, 94, 0.10), transparent 18%),
+        radial-gradient(circle at 50% 110%, rgba(16, 185, 129, 0.10), transparent 25%),
+        linear-gradient(145deg, #f8fafc 0%, #edf2f7 32%, #e2e8f0 68%, #f8fafc 100%);
+
+      --glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.60));
+      --surface-card:
+        linear-gradient(180deg, rgba(255,255,255,0.94), rgba(245,247,250,0.92)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.92), transparent 38%);
+      --surface-alt: rgba(255, 255, 255, 0.62);
+      --surface-input: rgba(255, 255, 255, 0.80);
+      --border: rgba(15, 23, 42, 0.10);
+      --border-soft: rgba(15, 23, 42, 0.08);
+      --border-strong: rgba(15, 23, 42, 0.16);
+      --text: #0f172a;
+      --muted: #475569;
+      --chip-bg: rgba(255, 255, 255, 0.72);
+      --chip-text: #0f172a;
+      --icon-bg: rgba(15, 23, 42, 0.06);
+      --tab-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(241, 245, 249, 0.92));
+      --tab-text: #1e293b;
+      --tab-subtext: #475569;
+      --badge-bg: rgba(255, 255, 255, 0.80);
+      --search-icon: #2563eb;
+      --loader-bg: rgba(241, 245, 249, 0.82);
+      --loader-track: rgba(15, 23, 42, 0.12);
+      --shadow: 0 20px 55px rgba(15, 23, 42, 0.10);
+      --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--page-bg);
+      font-family: "Inter", "Noto Sans Sinhala", sans-serif;
+      overflow-x: hidden;
+    }
+
+    body.menu-open { overflow: hidden; }
+
+    [hidden] { display: none !important; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+      white-space: nowrap;
+    }
+
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(72px);
+      opacity: 0.34;
+      z-index: 0;
+      pointer-events: none;
+      animation: orbFloat 14s ease-in-out infinite alternate;
+    }
+
+    .orb-1 {
+      width: 250px;
+      height: 250px;
+      top: 36px;
+      left: -60px;
+      background: rgba(37, 99, 235, 0.34);
+    }
+
+    .orb-2 {
+      width: 280px;
+      height: 280px;
+      top: 110px;
+      right: -60px;
+      background: rgba(239, 68, 68, 0.22);
+      animation-delay: 1s;
+    }
+
+    .orb-3 {
+      width: 320px;
+      height: 320px;
+      bottom: -50px;
+      left: 30%;
+      background: rgba(16, 185, 129, 0.18);
+      animation-delay: 2s;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 2;
+      width: min(1280px, calc(100% - 28px));
+      margin: 22px auto 42px;
+    }
+
+    .glass-panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px) saturate(130%);
+      -webkit-backdrop-filter: blur(22px) saturate(130%);
+      isolation: isolate;
+    }
+
+    .glass-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.02) 28%, transparent 60%),
+        linear-gradient(0deg, rgba(255,255,255,0.03), transparent 30%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glass-panel > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-loader,
+    .modal-backdrop,
+    .guard-backdrop {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      z-index: 9999;
+      background: var(--loader-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .page-loader.hide,
+    .modal-backdrop.hide {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .guard-backdrop {
+      background:
+        radial-gradient(circle at center, rgba(239,68,68,0.18), transparent 45%),
+        rgba(2, 6, 23, 0.90);
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .guard-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loader-box,
+    .modal-box,
+    .guard-box {
+      width: min(500px, 100%);
+      border-radius: 28px;
+      padding: 24px;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .guard-box {
+      border-color: rgba(239, 68, 68, 0.28);
+    }
+
+    .guard-icon {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      color: #fff;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      box-shadow: 0 20px 35px rgba(239, 68, 68, 0.22);
+    }
+
+    .guard-box h3 {
+      margin: 10px 0 8px;
+      font-size: 1.3rem;
+    }
+
+    .loader-brand,
+    .brand-chip,
+    .count-chip,
+    .status-chip,
+    .admin-pill,
+    .about-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      border: 1px solid var(--border-soft);
+      color: var(--chip-text);
+      font-size: 0.9rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .loader-brand, .brand-chip {
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .loader-ring {
+      width: 74px;
+      height: 74px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      border: 4px solid var(--loader-track);
+      border-top-color: var(--it-1);
+      border-right-color: var(--sft-2);
+      animation: spin 1s linear infinite;
+    }
+
+    .loader-title {
+      margin: 0 0 8px;
+      font-size: 1.25rem;
+    }
+
+    .loader-text,
+    .helper-note,
+    .modal-text,
+    .about-text {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .loader-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--loader-track);
+      border: 1px solid var(--border-soft);
+      margin-top: 14px;
+    }
+
+    .loader-bar span {
+      display: block;
+      height: 100%;
+      width: 36%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--it-1), var(--sft-1), var(--et-1));
+      animation: loaderSlide 1.6s ease-in-out infinite;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(18px);
+      z-index: 9997;
+      min-width: min(420px, calc(100% - 24px));
+      max-width: calc(100% - 24px);
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: var(--glass-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      text-align: center;
+      font-weight: 700;
+      backdrop-filter: blur(16px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success { border-color: rgba(16, 185, 129, 0.26); }
+    .toast.error { border-color: rgba(239, 68, 68, 0.26); }
+    .toast.info { border-color: rgba(59, 130, 246, 0.26); }
+
+    .hero {
+      padding: 26px;
+      border-radius: var(--radius-xl);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(37, 99, 235, 0.14), transparent 22%),
+        radial-gradient(circle at 84% 22%, rgba(239, 68, 68, 0.11), transparent 18%),
+        radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.10), transparent 22%);
+      pointer-events: none;
+    }
+
+    .hero-top,
+    .hero-top-right,
+    .toolbar,
+    .status-row,
+    .admin-top,
+    .admin-top-actions,
+    .card-actions,
+    .thumb-tools,
+    .thumb-preview-actions,
+    .auth-actions,
+    .about-actions,
+    .about-copy-actions,
+    .menu-actions,
+    .admin-card-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-top {
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hero-top-right {
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .hero h1 {
+      margin: 18px 0 8px;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-sub {
+      margin: 0;
+      max-width: 920px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    .toolbar {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1.18fr 0.92fr;
+      align-items: start;
+    }
+
+    .tabs-wrap,
+    .search-panel {
+      padding: 10px;
+      border-radius: 22px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border-soft);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset 0 -1px 0 rgba(0,0,0,0.04);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab-btn,
+    .action-btn,
+    .menu-close,
+    .menu-action-btn,
+    .menu-subject-btn,
+    .admin-mini-btn,
+    .admin-primary-btn,
+    .admin-secondary-btn,
+    .auth-btn,
+    .thumb-inline-btn,
+    .copy-btn,
+    .about-open-btn,
+    .subject-unlock-btn {
+      appearance: none;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-alt);
+      color: var(--text);
+      border-radius: 16px;
+      cursor: pointer;
+      transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        border-color 0.22s ease,
+        background 0.22s ease,
+        opacity 0.22s ease;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .tab-btn:hover,
+    .action-btn:hover,
+    .menu-close:hover,
+    .menu-action-btn:hover,
+    .menu-subject-btn:hover,
+    .admin-mini-btn:hover,
+    .admin-primary-btn:hover,
+    .admin-secondary-btn:hover,
+    .auth-btn:hover,
+    .thumb-inline-btn:hover,
+    .copy-btn:hover,
+    .about-open-btn:hover,
+    .subject-unlock-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .tab-btn:focus-visible,
+    .action-btn:focus-visible,
+    .menu-close:focus-visible,
+    .menu-action-btn:focus-visible,
+    .menu-subject-btn:focus-visible,
+    .admin-mini-btn:focus-visible,
+    .admin-primary-btn:focus-visible,
+    .admin-secondary-btn:focus-visible,
+    .auth-btn:focus-visible,
+    .thumb-inline-btn:focus-visible,
+    .copy-btn:focus-visible,
+    .about-open-btn:focus-visible,
+    .subject-unlock-btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }
+
+    .theme-toggle-header,
+    .admin-auth-btn,
+    .about-open-btn {
+      min-height: 46px;
+      padding: 10px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    .mobile-menu-toggle {
+      min-width: 46px;
+      min-height: 46px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 10px 12px;
+    }
+
+    .tabs .tab-btn {
+      min-height: 58px;
+      flex: 1 1 220px;
+      padding: 12px 14px;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--tab-bg);
+      color: var(--tab-text);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-btn.active.subject-et {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.24), rgba(249, 115, 22, 0.18));
+      border-color: rgba(249, 115, 22, 0.40);
+    }
+
+    .tab-btn.active.subject-it {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.24), rgba(6, 182, 212, 0.18));
+      border-color: rgba(59, 130, 246, 0.40);
+    }
+
+    .tab-btn.active.subject-sft {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(139, 92, 246, 0.18));
+      border-color: rgba(16, 185, 129, 0.40);
+    }
+
+    .tab-icon,
+    .menu-subject-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--icon-bg);
+      flex-shrink: 0;
+      font-size: 1.2rem;
+    }
+
+    .tab-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .tab-short {
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .tab-label {
+      color: var(--tab-subtext);
+      font-size: 0.84rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-count,
+    .menu-count {
+      margin-left: auto;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      background: var(--icon-bg);
+      flex-shrink: 0;
+      font-size: 0.84rem;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 58px;
+      padding: 0 14px;
+      border-radius: 18px;
+      background: var(--surface-input);
+      border: 1px solid var(--border-soft);
+      transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: rgba(96, 165, 250, 0.5);
+      box-shadow:
+        0 0 0 4px rgba(59, 130, 246, 0.12),
+        0 10px 25px rgba(37, 99, 235, 0.10);
+      transform: translateY(-1px);
+    }
+
+    .search-box svg {
+      width: 20px;
+      height: 20px;
+      color: var(--search-icon);
+      flex-shrink: 0;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    .search-box input::placeholder { color: var(--muted); }
+
+    .clear-btn {
+      border: 0;
+      background: var(--icon-bg);
+      color: var(--text);
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.85);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      font-size: 1rem;
+    }
+
+    .clear-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .helper-note {
+      margin: 10px 2px 2px;
+      font-size: 0.88rem;
+    }
+
+    .helper-note code {
+      background: var(--icon-bg);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      color: var(--text);
+    }
+
+    .status-row { margin-top: 18px; }
+
+    .status-chip {
+      font-size: 0.84rem;
+      font-weight: 700;
+      animation: softFloat 6s ease-in-out infinite;
+    }
+
+    .status-chip:nth-child(2) { animation-delay: .4s; }
+    .status-chip:nth-child(3) { animation-delay: .8s; }
+    .status-chip:nth-child(4) { animation-delay: 1.2s; }
+    .status-chip:nth-child(5) { animation-delay: 1.6s; }
+    .status-chip:nth-child(6) { animation-delay: 2s; }
+
+    .mobile-menu {
+      position: absolute;
+      top: 82px;
+      right: 20px;
+      width: min(360px, calc(100vw - 40px));
+      border-radius: 22px;
+      padding: 16px;
+      z-index: 20;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .mobile-menu.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .mobile-menu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mobile-menu-title {
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .menu-close {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+
+    .menu-section + .menu-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .menu-caption {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .menu-subject-list,
+    .menu-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .menu-subject-btn,
+    .menu-action-btn {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .menu-subject-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .menu-subject-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .menu-subject-text strong {
+      font-size: 0.95rem;
+    }
+
+    .menu-subject-text span {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .menu-subject-btn.active.subject-et {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(249, 115, 22, 0.14));
+      border-color: rgba(249, 115, 22, 0.40);
+    }
+
+    .menu-subject-btn.active.subject-it {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(6, 182, 212, 0.14));
+      border-color: rgba(59, 130, 246, 0.40);
+    }
+
+    .menu-subject-btn.active.subject-sft {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(139, 92, 246, 0.14));
+      border-color: rgba(16, 185, 129, 0.40);
+    }
+
+    .admin-panel,
+    .panel-head,
+    .empty-state,
+    .subject-lock-card {
+      border-radius: 24px;
+      margin-top: 24px;
+      padding: 22px;
+      animation: fadeUp .35s ease both;
+    }
+
+    .admin-top {
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .admin-top h2,
+    .panel-title-group h2 {
+      margin: 8px 0 6px;
+      font-size: clamp(1.35rem, 2vw, 1.9rem);
+    }
+
+    .admin-top p,
+    .panel-title-group p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 860px;
+    }
+
+    .admin-pill {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(239, 68, 68, 0.18));
+      border-color: rgba(245, 158, 11, 0.28);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .admin-form { margin-top: 18px; }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .admin-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .admin-field.full { grid-column: 1 / -1; }
+
+    .admin-field label,
+    .admin-field > span {
+      font-weight: 700;
+      font-size: 0.93rem;
+    }
+
+    .admin-field input,
+    .admin-field select,
+    .admin-field textarea {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-input);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+    }
+
+    .admin-field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .admin-field input::placeholder,
+    .admin-field textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .thumb-inline-btn,
+    .admin-primary-btn,
+    .admin-secondary-btn,
+    .auth-btn,
+    .copy-btn,
+    .subject-unlock-btn {
+      min-height: 46px;
+      padding: 11px 15px;
+      font-weight: 800;
+      border-radius: 16px;
+    }
+
+    .admin-primary-btn,
+    .auth-btn.primary,
+    .subject-unlock-btn {
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #8b5cf6);
+      border-color: transparent;
+    }
+
+    .admin-secondary-btn.danger,
+    .thumb-inline-btn.danger,
+    .admin-mini-btn.danger {
+      background: linear-gradient(135deg, rgba(239,68,68,0.16), rgba(249,115,22,0.16));
+      border-color: rgba(239,68,68,0.24);
+    }
+
+    .thumb-preview-panel {
+      margin-top: 8px;
+      border-radius: 22px;
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-alt);
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .thumb-preview-media {
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.55);
+      min-height: 120px;
+      aspect-ratio: 16/9;
+    }
+
+    .thumb-preview-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .thumb-preview-info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .thumb-preview-title { font-weight: 800; }
+
+    .thumb-preview-text {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.92rem;
+    }
+
+    .admin-message,
+    .auth-error {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .admin-message.success {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.24);
+    }
+
+    .admin-message.error,
+    .auth-error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.24);
+    }
+
+    .portal-content { margin-top: 24px; }
+
+    .subject-panel { display: none; }
+    .subject-panel.active { display: block; }
+
+    .panel-head {
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .subject-panel.subject-et .panel-head {
+      background:
+        linear-gradient(135deg, rgba(239,68,68,0.14), rgba(249,115,22,0.08)),
+        var(--glass-bg);
+    }
+
+    .subject-panel.subject-it .panel-head {
+      background:
+        linear-gradient(135deg, rgba(37,99,235,0.14), rgba(6,182,212,0.08)),
+        var(--glass-bg);
+    }
+
+    .subject-panel.subject-sft .panel-head {
+      background:
+        linear-gradient(135deg, rgba(16,185,129,0.14), rgba(139,92,246,0.08)),
+        var(--glass-bg);
+    }
+
+    .panel-head-content {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .panel-stat {
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: var(--chip-bg);
+      border: 1px solid var(--border-soft);
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .subject-lock-card {
+      text-align: center;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .subject-lock-icon {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 14px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      color: #fff;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      box-shadow: 0 20px 35px rgba(245, 158, 11, 0.22);
+    }
+
+    .subject-lock-card h3 {
+      margin: 10px 0 8px;
+      font-size: 1.3rem;
+    }
+
+    .subject-lock-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .subject-unlock-form {
+      width: min(480px, 100%);
+      margin: 18px auto 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .subject-unlock-input {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-input);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+      text-align: center;
+      letter-spacing: 0.15em;
+      font-weight: 800;
+    }
+
+    .subject-unlock-input::placeholder {
+      color: var(--muted);
+      letter-spacing: normal;
+      font-weight: 500;
+    }
+
+    .subject-lock-note {
+      margin-top: 12px !important;
+      font-size: 0.9rem;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 20px;
+    }
+
+    .record-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 26px;
+      background: var(--surface-card);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.15);
+      transition:
+        transform 0.30s ease,
+        box-shadow 0.30s ease,
+        border-color 0.30s ease,
+        background 0.30s ease;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+      backdrop-filter: blur(18px) saturate(135%);
+      -webkit-backdrop-filter: blur(18px) saturate(135%);
+      isolation: isolate;
+    }
+
+    .record-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      z-index: 3;
+    }
+
+    .record-card::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 26%, transparent 50%),
+        radial-gradient(circle at top left, rgba(255,255,255,0.10), transparent 35%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .record-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .record-card.revealed {
+      animation: cardReveal 0.55s cubic-bezier(.2,.7,.2,1) forwards;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    .record-card.subject-et::before { background: linear-gradient(90deg, var(--et-1), var(--et-2)); }
+    .record-card.subject-it::before { background: linear-gradient(90deg, var(--it-1), var(--it-2)); }
+    .record-card.subject-sft::before { background: linear-gradient(90deg, var(--sft-1), var(--sft-2)); }
+
+    .record-card.draft {
+      border-style: dashed;
+      border-color: rgba(245, 158, 11, 0.34);
+    }
+
+    .record-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow:
+        0 36px 70px rgba(0,0,0,0.32),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      border-color: var(--border-strong);
+    }
+
+    .thumb-wrap {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #020617;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.40s ease, opacity 0.35s ease, filter 0.35s ease;
+      opacity: .96;
+    }
+
+    .record-card:hover .thumb-wrap img {
+      transform: scale(1.06);
+      opacity: 1;
+      filter: saturate(1.10) contrast(1.02);
+    }
+
+    .thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(2, 6, 23, 0.06), rgba(2, 6, 23, 0.48)),
+        linear-gradient(0deg, rgba(2, 6, 23, 0.78), rgba(2, 6, 23, 0.08)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.14), transparent 24%);
+      pointer-events: none;
+    }
+
+    .subject-badge,
+    .unit-badge,
+    .type-badge,
+    .visibility-badge {
+      position: absolute;
+      z-index: 2;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 7px 11px;
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    }
+
+    .subject-badge { top: 12px; left: 12px; background: var(--badge-bg); }
+    .unit-badge { top: 12px; right: 12px; color: #fff; }
+    .type-badge { left: 12px; bottom: 12px; background: var(--badge-bg); }
+
+    .visibility-badge {
+      left: 12px;
+      top: 52px;
+      color: #fff;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+    }
+
+    .record-card.subject-et .unit-badge { background: linear-gradient(135deg, var(--et-1), var(--et-2)); }
+    .record-card.subject-it .unit-badge { background: linear-gradient(135deg, var(--it-1), var(--it-2)); }
+    .record-card.subject-sft .unit-badge { background: linear-gradient(135deg, var(--sft-1), var(--sft-2)); }
+
+    .play-bubble {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      z-index: 2;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      box-shadow:
+        0 10px 25px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.14);
+      backdrop-filter: blur(12px);
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      gap: 12px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.65;
+      font-weight: 700;
+      min-height: 3.3em;
+    }
+
+    .card-title mark {
+      background: rgba(251, 191, 36, 0.28);
+      color: inherit;
+      border-radius: 6px;
+      padding: 0 4px;
+    }
+
+    .admin-mini-btn {
+      flex: 1 1 120px;
+      min-height: 42px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .watch-btn {
+      width: 100%;
+      min-height: 46px;
+      border-radius: 14px;
+      border: 0;
+      color: #fff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 800;
+      padding: 12px 14px;
+      transition: transform 0.22s ease, filter 0.22s ease, opacity 0.22s ease;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.18);
+    }
+
+    .record-card.subject-et .watch-btn { background: linear-gradient(135deg, var(--et-1), var(--et-2)); }
+    .record-card.subject-it .watch-btn { background: linear-gradient(135deg, var(--it-1), var(--it-2)); }
+    .record-card.subject-sft .watch-btn { background: linear-gradient(135deg, var(--sft-1), var(--sft-2)); }
+
+    .watch-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .watch-btn.disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .empty-state {
+      padding: 34px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .empty-state h3 {
+      margin: 8px 0 6px;
+      font-size: 1.2rem;
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .modal-backdrop {
+      z-index: 9998;
+      background: rgba(2, 6, 23, 0.58);
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      text-align: left;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .modal-head h3 {
+      margin: 8px 0 0;
+      font-size: 1.25rem;
+    }
+
+    .auth-form { display: grid; gap: 14px; }
+
+    .about-modal-box {
+      width: min(620px, 100%);
+      text-align: left;
+    }
+
+    .about-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .about-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .about-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--maker-1), var(--maker-2), var(--maker-3));
+      background-size: 180% 180%;
+      animation: makerGradient 6s ease infinite;
+      box-shadow: 0 18px 30px rgba(37, 99, 235, 0.20);
+      flex-shrink: 0;
+    }
+
+    .about-meta h3 {
+      margin: 4px 0 4px;
+      font-size: 1.3rem;
+    }
+
+    .about-meta p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0 18px;
+    }
+
+    .about-info-card {
+      border-radius: 20px;
+      padding: 16px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border-soft);
+    }
+
+    .about-info-card small {
+      display: block;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .about-info-card strong {
+      display: block;
+      font-size: 1rem;
+      word-break: break-word;
+    }
+
+    .about-actions,
+    .about-copy-actions {
+      margin-top: 10px;
+    }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .maker-badge {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 40;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.62));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 14px 24px rgba(0,0,0,0.22);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      max-width: calc(100vw - 24px);
+    }
+
+    :root[data-theme="light"] .maker-badge {
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.76));
+      border-color: rgba(15,23,42,0.08);
+      box-shadow: 0 14px 24px rgba(15,23,42,0.10);
+    }
+
+    .maker-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.82rem;
+      background: linear-gradient(135deg, var(--maker-1), var(--maker-2), var(--maker-3));
+      background-size: 180% 180%;
+      animation: makerGradient 6s ease infinite;
+      flex-shrink: 0;
+    }
+
+    .maker-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+      min-width: 0;
+    }
+
+    .maker-copy small {
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .maker-copy strong {
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes cardReveal {
+      from { opacity: 0; transform: translateY(20px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes softFloat {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes orbFloat {
+      0% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(18px,-12px,0) scale(1.04); }
+      100% { transform: translate3d(-12px,14px,0) scale(0.98); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes loaderSlide {
+      0% { transform: translateX(-120%); }
+      50% { transform: translateX(90%); }
+      100% { transform: translateX(260%); }
+    }
+
+    @keyframes makerGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @media (max-width: 980px) {
+      .toolbar { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 860px) {
+      .admin-grid,
+      .thumb-preview-panel,
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .mobile-menu-toggle { display: inline-flex; }
+      .mobile-menu { display: block !important; }
+      .admin-auth-desktop,
+      .about-open-desktop {
+        display: none !important;
+      }
+    }
+
+    @media (min-width: 761px) {
+      .mobile-menu,
+      .mobile-menu-toggle {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .app-shell {
+        width: min(100% - 18px, 1280px);
+        margin-top: 14px;
+      }
+
+      .hero {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .panel-head,
+      .empty-state,
+      .admin-panel,
+      .subject-lock-card {
+        border-radius: 20px;
+      }
+
+      .tab-btn { flex: 1 1 100%; }
+      .tab-label { white-space: normal; }
+      .count-chip { display: none; }
+
+      .subject-unlock-form {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .theme-toggle-header .theme-label,
+      .about-open-btn .about-label {
+        display: none;
+      }
+
+      .theme-toggle-header,
+      .about-open-btn {
+        min-width: 46px;
+        justify-content: center;
+        padding: 10px 12px;
+      }
+
+      .maker-copy { display: none; }
+
+      .maker-badge {
+        padding: 8px;
+        border-radius: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-loader" id="pageLoader" aria-hidden="true">
+    <div class="loader-box">
+      <div class="loader-brand">Student Portal</div>
+      <div class="loader-ring"></div>
+      <h2 class="loader-title">Loading Portal...</h2>
+      <p class="loader-text">Published videos load වෙනවා. පුංචි wait එකක් දෙන්න.</p>
+      <div class="loader-bar"><span></span></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="guard-backdrop" id="guardOverlay" hidden>
+    <div class="guard-box glass-panel">
+      <div class="guard-icon">🛡️</div>
+      <h3>Protected View Detected</h3>
+      <p class="modal-text" id="guardText">
+        Restricted inspect action detected. Page refresh වෙලා back වෙනවා...
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <div class="maker-badge" aria-label="Made by Kiviru Daham Creator">
+    <div class="maker-logo">KD</div>
+    <div class="maker-copy">
+      <small>Made by</small>
+      <strong>Kiviru Daham Creator</strong>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <header class="hero glass-panel">
+      <div class="hero-top">
+        <div class="brand-chip">Student Portal • Protected Cloud Recordings</div>
+
+        <div class="hero-top-right">
+          <div class="count-chip" id="totalCountChip">0 Videos</div>
+
+          <button
+            class="action-btn theme-toggle-header"
+            type="button"
+            data-theme-toggle
+            aria-label="Switch theme"
+            title="Switch theme"
+          >
+            <span class="theme-icon">☀️</span>
+            <span class="theme-label">Switch Theme</span>
+          </button>
+
+          <button
+            class="about-open-btn about-open-desktop"
+            type="button"
+            id="aboutBtnDesktop"
+            aria-label="About creator"
+            title="About creator"
+          >
+            <span>ℹ️</span>
+            <span class="about-label">About</span>
+          </button>
+
+          <button
+            class="action-btn admin-auth-btn admin-auth-desktop"
+            type="button"
+            id="adminAuthBtnDesktop"
+            aria-label="Admin Login"
+            title="Admin Login"
+          >
+            <span class="admin-auth-icon">🔐</span>
+            <span class="admin-auth-label">Admin Login</span>
+          </button>
+
+          <button
+            class="action-btn mobile-menu-toggle"
+            type="button"
+            id="mobileMenuToggle"
+            aria-label="Open mobile menu"
+            aria-expanded="false"
+            aria-controls="mobileMenu"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+
+      <div class="mobile-menu glass-panel" id="mobileMenu" hidden>
+        <div class="mobile-menu-header">
+          <div class="mobile-menu-title">Quick Menu</div>
+          <button class="menu-close" type="button" id="mobileMenuClose" aria-label="Close menu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <p class="menu-caption">Subjects</p>
+          <div class="menu-subject-list" id="mobileSubjectLinks"></div>
+        </div>
+
+        <div class="menu-section">
+          <p class="menu-caption">Quick Actions</p>
+          <div class="menu-actions">
+            <button class="menu-action-btn" type="button" data-theme-toggle>
+              <span style="display:flex;align-items:center;gap:10px;">
+                <span class="theme-icon">☀️</span>
+                <span class="theme-label">Switch Theme</span>
+              </span>
+              <span>↻</span>
+            </button>
+
+            <button class="menu-action-btn" type="button" id="aboutBtnMobile">
+              <span style="display:flex;align-items:center;gap:10px;">
+                <span>ℹ️</span>
+                <span>About Creator</span>
+              </span>
+              <span>↗</span>
+            </button>
+
+            <button
+              class="menu-action-btn"
+              type="button"
+              id="adminAuthBtnMobile"
+              aria-label="Admin Login"
+              title="Admin Login"
+            >
+              <span style="display:flex;align-items:center;gap:10px;">
+                <span class="admin-auth-icon">🔐</span>
+                <span class="admin-auth-label">Admin Login</span>
+              </span>
+              <span>↻</span>
+            </button>
+
+            <button class="menu-action-btn admin-only" type="button" id="mobileOpenAdminPanel" hidden>
+              <span>Open Admin Panel</span>
+              <span>⚙️</span>
+            </button>
+
+            <button class="menu-action-btn" type="button" id="mobileClearSearch">
+              <span>Clear Search</span>
+              <span>✕</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <h1>Recordings for A/L</h1>
+      <p class="hero-sub">
+        ET, IT, SFT sections password protect කරලා තියෙනවා.
+      </p>
+
+      <div class="toolbar">
+        <div class="tabs-wrap glass-panel">
+          <div class="tabs" id="tabs" role="tablist" aria-label="Subjects"></div>
+        </div>
+
+        <div class="search-panel glass-panel">
+          <label class="sr-only" for="searchInput"></label>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="Search by title, subject, unit..."
+              aria-label="Searc by title, subject or unit"
+            />
+            <button class="clear-btn" id="clearSearch" type="button" aria-label="Clear search">✕</button>
+          </div>
+          <p class="helper-note">
+          </p>
+        </div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-chip" id="activeSubjectLabel">Active: ET</div>
+        <div class="status-chip" id="visibleCountLabel">Showing 0 videos</div>
+        <div class="status-chip" id="filteredTotalLabel">Portal Total: 0</div>
+        <div class="status-chip" id="cloudStatusChip">Cloud: Connecting...</div>
+        <div class="status-chip" id="shieldStatusChip">Permissions: Viewer</div>
+        <div class="status-chip admin-only" id="adminStatusChip" hidden>Admin Mode: ON</div>
+      </div>
+    </header>
+
+    <section class="admin-panel glass-panel admin-only" id="adminPanel" hidden>
+      <div class="admin-top">
+        <div>
+          <div class="admin-pill">Admin Only • Firebase Secure Management</div>
+          <h2 id="adminFormHeading">Add New Recording</h2>
+          <p>
+            Published recordings හැමෝටම පේනවා. Draft recordings adminට විතරයි පේන්නේ.
+            Firestore cloud database එකට data save වෙනවා. Thumbnail upload image auto-compress වෙනවා.
+          </p>
+        </div>
+
+        <div class="admin-top-actions">
+          <button class="admin-secondary-btn" type="button" id="cancelEditBtn" hidden>Cancel Edit</button>
+          <button class="admin-secondary-btn danger" type="button" id="resetPortalBtn">Restore Default Cloud Data</button>
+        </div>
+      </div>
+
+      <form class="admin-form" id="adminForm">
+        <input type="hidden" id="editingLessonId" />
+
+        <div class="admin-grid">
+          <div class="admin-field">
+            <label for="adminSubject">Subject</label>
+            <select id="adminSubject" required></select>
+          </div>
+
+          <div class="admin-field">
+            <label for="adminUnit">Unit</label>
+            <input id="adminUnit" type="text" placeholder="01" required />
+          </div>
+
+          <div class="admin-field">
+            <label for="adminType">Type</label>
+            <input id="adminType" type="text" placeholder="Theory / Tute" required />
+          </div>
+
+          <div class="admin-field">
+            <label for="adminPublished">Visibility</label>
+            <select id="adminPublished" required>
+              <option value="true">Show to everyone now</option>
+              <option value="false">Save as hidden draft (admin only)</option>
+            </select>
+          </div>
+
+          <div class="admin-field">
+            <label for="adminThumbVideoId">Thumbnail Video ID</label>
+            <input id="adminThumbVideoId" type="text" placeholder="YouTube video ID (optional)" />
+          </div>
+
+          <div class="admin-field full">
+            <label for="adminTitle">Title</label>
+            <textarea id="adminTitle" placeholder="Recording title..." required></textarea>
+          </div>
+
+          <div class="admin-field full">
+            <label for="adminUrl">YouTube / Playlist URL</label>
+            <input id="adminUrl" type="url" placeholder="https://www.youtube.com/..." />
+          </div>
+
+          <div class="admin-field full">
+            <label for="adminCustomThumbUrl">Custom Thumbnail URL</label>
+            <input id="adminCustomThumbUrl" type="url" placeholder="https://example.com/thumbnail.jpg" />
+          </div>
+
+          <div class="admin-field full">
+            <label for="adminThumbFile">Upload Thumbnail Image</label>
+            <input id="adminThumbFile" type="file" accept="image/*" />
+            <div class="thumb-tools">
+              <button class="thumb-inline-btn" type="button" id="applyThumbUrlBtn">Use Thumbnail URL</button>
+              <button class="thumb-inline-btn danger" type="button" id="clearCustomThumbBtn">Remove Custom Thumbnail</button>
+            </div>
+          </div>
+
+          <div class="admin-field full">
+            <div class="thumb-preview-panel" id="adminThumbPreviewPanel" hidden>
+              <div class="thumb-preview-media">
+                <img id="adminThumbPreviewImg" alt="Thumbnail preview" />
+              </div>
+              <div class="thumb-preview-info">
+                <div class="thumb-preview-title">Thumbnail Preview</div>
+                <div class="thumb-preview-text" id="adminThumbPreviewText">
+                  Selected custom thumbnail preview.
+                </div>
+                <div class="thumb-preview-actions">
+                  <button class="thumb-inline-btn danger" type="button" id="clearCustomThumbBtnInline">Remove Custom Thumbnail</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="helper-note">
+          <strong>Priority:</strong> Custom uploaded image / custom thumbnail URL →
+          <code>thumbVideoId</code> → YouTube video thumbnail → fallback thumbnail.
+          <br />
+          <strong>Visibility:</strong> <code>Show to everyone now</code> = public.
+          <code>Save as hidden draft</code> = admin only.
+        </p>
+
+        <div class="card-actions" style="margin-top:18px;">
+          <button class="admin-primary-btn" type="submit">
+            <span id="adminSubmitText">Save Recording</span>
+          </button>
+          <button class="admin-secondary-btn" type="button" id="clearAdminFormBtn">Clear Form</button>
+        </div>
+
+        <div class="admin-message success" id="adminMessage" hidden></div>
+      </form>
+    </section>
+
+    <main id="portalContent" class="portal-content"></main>
+  </div>
+
+  <div class="modal-backdrop" id="authModal" hidden>
+    <div class="modal-box glass-panel" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+      <div class="modal-head">
+        <div>
+          <div class="admin-pill">Secure Firebase Login</div>
+          <h3 id="authModalTitle">Admin Sign In</h3>
+        </div>
+        <button class="menu-close" type="button" id="authModalClose" aria-label="Close login modal">✕</button>
+      </div>
+
+      <p class="modal-text">
+        Email / password use කරලා login කරන්න. Admin panel unlock වෙන්නේ
+        <strong>custom claim <code>admin: true</code></strong>
+        තියෙන accounts වලට විතරයි.
+      </p>
+
+      <form class="auth-form" id="adminLoginForm">
+        <div class="admin-field">
+          <label for="adminEmailInput">Email</label>
+          <input
+            id="adminEmailInput"
+            type="email"
+            autocomplete="username"
+            placeholder="admin@example.com"
+            required
+          />
+        </div>
+
+        <div class="admin-field">
+          <label for="adminPasswordInput">Password</label>
+          <input
+            id="adminPasswordInput"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Enter password"
+            required
+          />
+        </div>
+
+        <p class="auth-error" id="authError" hidden>Login failed. නැවත try කරන්න.</p>
+
+        <div class="auth-actions">
+          <button class="auth-btn primary" type="submit">Login</button>
+          <button class="auth-btn" type="button" id="authCancelBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="aboutModal" hidden>
+    <div class="modal-box about-modal-box glass-panel" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
+      <div class="about-top">
+        <div class="about-brand">
+          <div class="about-logo">KD</div>
+          <div class="about-meta">
+            <div class="about-pill">Creator • Kiviru Daham Creator</div>
+            <h3 id="aboutModalTitle">About the Creator</h3>
+            <p>web design, UI concept, branding and secure management flow by Kiviru Daham.</p>
+          </div>
+        </div>
+
+        <button class="menu-close" type="button" id="aboutModalClose" aria-label="Close about modal">✕</button>
+      </div>
+
+      <p class="about-text"></p>
+
+      <div class="about-grid">
+        <div class="about-info-card">
+          <small>Name</small>
+          <strong>Kiviru Daham</strong>
+        </div>
+        <div class="about-info-card">
+          <small>Brand</small>
+          <strong>Kiviru Daham Creator</strong>
+        </div>
+        <div class="about-info-card">
+          <small>Email</small>
+          <strong id="aboutEmailText">Kdkiviru@gmail.com</strong>
+        </div>
+        <div class="about-info-card">
+          <small>Contact</small>
+          <strong id="aboutPhoneText">+94 74 164 2609</strong>
+        </div>
+      </div>
+
+      <div class="about-actions">
+        <a class="auth-btn primary" href="mailto:Kdkiviru@gmail.com?subject=Student%20Portal%20Inquiry">Send Email</a>
+        <a class="auth-btn" href="tel:+94741642609">Call</a>
+      </div>
+
+      <div class="about-copy-actions">
+        <button class="copy-btn" type="button" id="copyEmailBtn">Copy Email</button>
+        <button class="copy-btn" type="button" id="copyPhoneBtn">Copy Number</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      signOut,
+      getIdTokenResult,
+      setPersistence,
+      browserSessionPersistence
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      getDocs,
+      writeBatch,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDGxIaLjmntt_NzXDyG_0JWF2XxuhG2fCg",
+      authDomain: "student-portal-2451b.firebaseapp.com",
+      projectId: "student-portal-2451b",
+      storageBucket: "student-portal-2451b.firebasestorage.app",
+      messagingSenderId: "937334188493",
+      appId: "1:937334188493:web:d3d77dab0f508bfecdfc84"
+    };
+
+    const ADMIN_REQUIRED_CLAIM = "admin";
+    const SUBJECT_UNLOCK_STORAGE_KEY = "portal-subject-unlocks";
+
+    const SUBJECTS = [
+      {
+        id: "ET",
+        icon: "⚙️",
+        name: "Engineering Tech",
+        description: "ඉංජිනේරු තාක්ෂණවේදය theory recordings."
+      },
+      {
+        id: "IT",
+        icon: "💻",
+        name: "Information Tech",
+        description: "පරිගණක මූලිකාංග, data representation, logic, networking සහ IT fundamentals."
+      },
+      {
+        id: "SFT",
+        icon: "🔬",
+        name: "Science for Tech",
+        description: "මිනුම්, ඒකක, බලය, චලනය, ශක්තිය හා තාක්ෂණයට අදාළ විද්‍යාත්මක පදනම්."
+      }
+    ];
+
+    const SUBJECT_PASSWORDS = Object.freeze({
+      ET: "3488",
+      IT: "9914",
+      SFT: "5517"
+    });
+
+    const DEFAULT_RECORDINGS = [
+      {
+        subjectId: "ET",
+        unit: "01",
+        type: "Theory / Tute",
+        title: "ET - (THEORY - UNIT 01 - TUTE) ඉංජිනේරු තාක්ෂණවේදය හැඳින්වීම",
+        url: "https://www.youtube.com/playlist?list=PLQDDk_9PVPrvdoIXYbUYu3SafqGl5rh-D",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "ET",
+        unit: "02",
+        type: "Theory Course",
+        title: "ET - THEORY COURSE (UNIT 02 - TUTE) ඉංජිනේරු ඇඳීම - සම්පූර්ණ පාඩම",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "ET",
+        unit: "03",
+        type: "Theory / Revision",
+        title: "ET - යාන්ත්‍රික පද්ධති මූලික සංකල්ප සහ practical support discussion",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "IT",
+        unit: "01",
+        type: "Full Lesson",
+        title: "IT - පරිගණකයේ මූලිකාංග සහ පද්ධති - සම්පූර්ණ පාඩම",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "IT",
+        unit: "02",
+        type: "Theory / Tute",
+        title: "IT - දත්ත නිරූපණය, binary logic සහ encoding මූලික පදනම්",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "IT",
+        unit: "03",
+        type: "Theory / Practice",
+        title: "IT - Network fundamentals, internet services සහ communication basics",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "SFT",
+        unit: "01",
+        type: "Full Lesson",
+        title: "SFT - මිනුම් උපකරණ සහ ඒකක - සම්පූර්ණ පාඩම",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "SFT",
+        unit: "02",
+        type: "Theory / Tute",
+        title: "SFT - බලය සහ චලනය පිළිබඳ මූලික සංකල්ප",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      },
+      {
+        subjectId: "SFT",
+        unit: "03",
+        type: "Theory / Revision",
+        title: "SFT - ශක්තිය, බලශක්තිය සහ විදුලි මූලික අදහස්",
+        url: "",
+        thumbVideoId: "",
+        customThumbnail: "",
+        published: true
+      }
+    ];
+
+    function loadUnlockedSubjectsFromSession() {
+      try {
+        const parsed = JSON.parse(sessionStorage.getItem(SUBJECT_UNLOCK_STORAGE_KEY) || "{}");
+        return SUBJECTS.reduce((acc, subject) => {
+          acc[subject.id] = parsed?.[subject.id] === true;
+          return acc;
+        }, {});
+      } catch {
+        return SUBJECTS.reduce((acc, subject) => {
+          acc[subject.id] = false;
+          return acc;
+        }, {});
+      }
+    }
+
+    const state = {
+      activeSubject: SUBJECTS[0].id,
+      query: "",
+      mobileMenuOpen: false,
+      isAdmin: false,
+      cloudMode: "demo",
+      firebaseConfigured: false,
+      cloudConnected: false,
+      guardTriggered: false,
+      devtoolsOpen: false,
+      unlockedSubjects: loadUnlockedSubjectsFromSession()
+    };
+
+    const adminThumbState = {
+      currentValue: ""
+    };
+
+    let firebaseApp = null;
+    let auth = null;
+    let db = null;
+    let unsubscribeRecordings = null;
+    let portalData = buildPortalData([]);
+    let toastTimer = null;
+    let sizeGuardInterval = null;
+    let debuggerGuardInterval = null;
+
+    const pageLoader = document.getElementById("pageLoader");
+    const toastEl = document.getElementById("toast");
+    const guardOverlay = document.getElementById("guardOverlay");
+    const guardText = document.getElementById("guardText");
+
+    const tabsEl = document.getElementById("tabs");
+    const portalContentEl = document.getElementById("portalContent");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearch");
+    const totalCountChip = document.getElementById("totalCountChip");
+    const activeSubjectLabel = document.getElementById("activeSubjectLabel");
+    const visibleCountLabel = document.getElementById("visibleCountLabel");
+    const filteredTotalLabel = document.getElementById("filteredTotalLabel");
+    const cloudStatusChip = document.getElementById("cloudStatusChip");
+    const shieldStatusChip = document.getElementById("shieldStatusChip");
+    const adminStatusChip = document.getElementById("adminStatusChip");
+    const themeColorMeta = document.getElementById("themeColorMeta");
+
+    const mobileMenu = document.getElementById("mobileMenu");
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const mobileMenuClose = document.getElementById("mobileMenuClose");
+    const mobileSubjectLinks = document.getElementById("mobileSubjectLinks");
+    const mobileClearSearch = document.getElementById("mobileClearSearch");
+    const mobileOpenAdminPanel = document.getElementById("mobileOpenAdminPanel");
+
+    const adminPanel = document.getElementById("adminPanel");
+    const adminForm = document.getElementById("adminForm");
+    const adminSubject = document.getElementById("adminSubject");
+    const adminUnit = document.getElementById("adminUnit");
+    const adminType = document.getElementById("adminType");
+    const adminPublished = document.getElementById("adminPublished");
+    const adminTitle = document.getElementById("adminTitle");
+    const adminUrl = document.getElementById("adminUrl");
+    const adminThumbVideoId = document.getElementById("adminThumbVideoId");
+    const adminCustomThumbUrl = document.getElementById("adminCustomThumbUrl");
+    const adminThumbFile = document.getElementById("adminThumbFile");
+    const applyThumbUrlBtn = document.getElementById("applyThumbUrlBtn");
+    const clearCustomThumbBtn = document.getElementById("clearCustomThumbBtn");
+    const clearCustomThumbBtnInline = document.getElementById("clearCustomThumbBtnInline");
+    const adminThumbPreviewPanel = document.getElementById("adminThumbPreviewPanel");
+    const adminThumbPreviewImg = document.getElementById("adminThumbPreviewImg");
+    const adminThumbPreviewText = document.getElementById("adminThumbPreviewText");
+    const editingLessonId = document.getElementById("editingLessonId");
+    const adminFormHeading = document.getElementById("adminFormHeading");
+    const adminSubmitText = document.getElementById("adminSubmitText");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const clearAdminFormBtn = document.getElementById("clearAdminFormBtn");
+    const resetPortalBtn = document.getElementById("resetPortalBtn");
+    const adminMessage = document.getElementById("adminMessage");
+
+    const adminAuthBtnDesktop = document.getElementById("adminAuthBtnDesktop");
+    const adminAuthBtnMobile = document.getElementById("adminAuthBtnMobile");
+
+    const authModal = document.getElementById("authModal");
+    const authModalClose = document.getElementById("authModalClose");
+    const authCancelBtn = document.getElementById("authCancelBtn");
+    const adminLoginForm = document.getElementById("adminLoginForm");
+    const adminEmailInput = document.getElementById("adminEmailInput");
+    const adminPasswordInput = document.getElementById("adminPasswordInput");
+    const authError = document.getElementById("authError");
+
+    const aboutModal = document.getElementById("aboutModal");
+    const aboutModalClose = document.getElementById("aboutModalClose");
+    const aboutBtnDesktop = document.getElementById("aboutBtnDesktop");
+    const aboutBtnMobile = document.getElementById("aboutBtnMobile");
+    const copyEmailBtn = document.getElementById("copyEmailBtn");
+    const copyPhoneBtn = document.getElementById("copyPhoneBtn");
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function escapeRegExp(text) {
+      return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function normalizeText(text) {
+      return String(text ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function isValidHttpUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+    function isDataImageUrl(value) {
+      return /^data:image\/[a-zA-Z0-9.+-]+;base64,/i.test(String(value || "").trim());
+    }
+
+    function isValidImageSource(value) {
+      return isDataImageUrl(value) || isValidHttpUrl(value);
+    }
+
+    function getUnitNumber(value) {
+      const match = String(value || "").match(/\d+/);
+      return match ? Number(match[0]) : 9999;
+    }
+
+    function persistUnlockedSubjects() {
+      try {
+        sessionStorage.setItem(
+          SUBJECT_UNLOCK_STORAGE_KEY,
+          JSON.stringify(state.unlockedSubjects)
+        );
+      } catch {}
+    }
+
+    function isSubjectUnlocked(subjectId) {
+      return state.isAdmin || !!state.unlockedSubjects?.[subjectId];
+    }
+
+    function unlockSubject(subjectId) {
+      if (!SUBJECT_PASSWORDS[subjectId]) return;
+      state.unlockedSubjects[subjectId] = true;
+      persistUnlockedSubjects();
+    }
+
+    function isLessonPublished(lesson) {
+      return lesson?.published !== false;
+    }
+
+    function getLessonsForViewer(subject) {
+      if (!isSubjectUnlocked(subject.id)) return [];
+      return state.isAdmin
+        ? subject.lessons
+        : subject.lessons.filter(isLessonPublished);
+    }
+
+    function getViewerLessonTotal() {
+      return portalData.reduce((total, subject) => total + getLessonsForViewer(subject).length, 0);
+    }
+
+    function showToast(message, type = "info", duration = 2400) {
+      toastEl.textContent = message;
+      toastEl.className = `toast ${type} show`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.className = "toast";
+      }, duration);
+    }
+
+    function showAdminMessage(message, type = "success") {
+      adminMessage.textContent = message;
+      adminMessage.className = `admin-message ${type}`;
+      adminMessage.hidden = false;
+    }
+
+    function hideAdminMessage() {
+      adminMessage.hidden = true;
+      adminMessage.textContent = "";
+    }
+
+    function getCurrentTheme() {
+      return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+    }
+
+    function updateThemeMeta(theme) {
+      themeColorMeta.setAttribute("content", theme === "light" ? "#f8fafc" : "#08111f");
+    }
+
+    function updateThemeButtons(theme) {
+      const icon = theme === "light" ? "🌙" : "☀️";
+      const label = theme === "light" ? "Switch to Dark" : "Switch to Light";
+
+      document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+        const iconEl = btn.querySelector(".theme-icon");
+        const labelEl = btn.querySelector(".theme-label");
+        if (iconEl) iconEl.textContent = icon;
+        if (labelEl) labelEl.textContent = label;
+        btn.setAttribute("aria-label", label);
+        btn.setAttribute("title", label);
+      });
+    }
+
+    function setTheme(theme) {
+      document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+      try {
+        localStorage.setItem("portal-theme", document.documentElement.dataset.theme);
+      } catch {}
+      updateThemeButtons(document.documentElement.dataset.theme);
+      updateThemeMeta(document.documentElement.dataset.theme);
+    }
+
+    function toggleTheme() {
+      setTheme(getCurrentTheme() === "light" ? "dark" : "light");
+    }
+
+    function hideLoader() {
+      pageLoader.classList.add("hide");
+      setTimeout(() => {
+        pageLoader.hidden = true;
+      }, 450);
+    }
+
+    function isFirebaseConfigured() {
+      return Object.values(FIREBASE_CONFIG).every(
+        (value) => value && !String(value).startsWith("YOUR_")
+      );
+    }
+
+    function persistAdminUnlockFlag() {
+      try {
+        if (state.isAdmin) {
+          sessionStorage.setItem("portal-admin-unlocked", "1");
+          sessionStorage.removeItem("portal-devtools-hit");
+          sessionStorage.removeItem("portal-devtools-reason");
+        } else {
+          sessionStorage.removeItem("portal-admin-unlocked");
+        }
+      } catch {}
+    }
+
+    function showGuardOverlay(message) {
+      guardText.textContent = message;
+      guardOverlay.hidden = false;
+      requestAnimationFrame(() => guardOverlay.classList.add("open"));
+    }
+
+    function shouldInspectGuard() {
+      return !state.isAdmin;
+    }
+
+    function performBackExit() {
+      setTimeout(() => {
+        try {
+          if (history.length > 1) {
+            history.back();
+          } else {
+            location.replace("about:blank");
+          }
+        } catch {
+          location.replace("about:blank");
+        }
+      }, 850);
+    }
+
+    function triggerInspectGuard(reason = "Developer tools blocked.") {
+      if (!shouldInspectGuard() || state.guardTriggered) return;
+      state.guardTriggered = true;
+
+      try {
+        sessionStorage.setItem("portal-devtools-hit", "1");
+        sessionStorage.setItem("portal-devtools-reason", reason);
+      } catch {}
+
+      showGuardOverlay(`${reason} Page refresh වෙනවා...`);
+
+      setTimeout(() => {
+        try {
+          location.reload();
+        } catch {
+          location.replace(location.href);
+        }
+      }, 520);
+    }
+
+    function runBootGuardExitIfNeeded() {
+      if (window.__PORTAL_FORCE_EXIT__?.active && !state.isAdmin) {
+        showGuardOverlay(`${window.__PORTAL_FORCE_EXIT__.reason} Page එකෙන් පිටවෙමින් තිබේ...`);
+        performBackExit();
+        return true;
+      }
+      return false;
+    }
+
+    function detectDevtoolsBySize() {
+      if (!shouldInspectGuard()) return;
+
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+      const open = widthDiff > 160 || heightDiff > 160;
+
+      if (open && !state.devtoolsOpen) {
+        state.devtoolsOpen = true;
+        triggerInspectGuard("Developer tools detected.");
+      } else if (!open) {
+        state.devtoolsOpen = false;
+      }
+    }
+
+    function detectDevtoolsByDebugger() {
+      if (!shouldInspectGuard()) return;
+
+      const start = performance.now();
+      debugger;
+      const end = performance.now();
+
+      if (end - start > 120) {
+        triggerInspectGuard("Debugger / inspect pause detected.");
+      }
+    }
+
+    function initInspectGuards() {
+      document.addEventListener("contextmenu", (event) => {
+        if (!shouldInspectGuard()) return;
+        event.preventDefault();
+        triggerInspectGuard("Right click blocked.");
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (!shouldInspectGuard()) return;
+
+        const key = String(event.key || "").toLowerCase();
+        const ctrlOrMeta = event.ctrlKey || event.metaKey;
+        const blocked =
+          key === "f12" ||
+          (ctrlOrMeta && event.shiftKey && ["i", "j", "c", "k"].includes(key)) ||
+          (ctrlOrMeta && ["u", "s"].includes(key));
+
+        if (blocked) {
+          event.preventDefault();
+          event.stopPropagation();
+          triggerInspectGuard("Inspect shortcut blocked.");
+        }
+      }, true);
+
+      window.addEventListener("resize", detectDevtoolsBySize);
+
+      sizeGuardInterval = setInterval(detectDevtoolsBySize, 900);
+      debuggerGuardInterval = setInterval(detectDevtoolsByDebugger, 1800);
+    }
+
+    function normalizeCloudRecord(data, id) {
+      return {
+        id: String(id || ""),
+        subjectId: String(data?.subjectId || "").trim(),
+        unit: String(data?.unit ?? "").trim(),
+        type: String(data?.type ?? "").trim(),
+        title: String(data?.title ?? "").trim(),
+        url: String(data?.url ?? "").trim(),
+        thumbVideoId: String(data?.thumbVideoId ?? "").trim(),
+        customThumbnail: String(data?.customThumbnail ?? "").trim(),
+        published: data?.published !== false,
+        createdAt: data?.createdAt?.toMillis?.() || 0
+      };
+    }
+
+    function buildPortalData(records) {
+      return SUBJECTS.map((subject) => {
+        const lessons = records
+          .filter((record) => record.subjectId === subject.id)
+          .sort((a, b) => {
+            const byUnit = getUnitNumber(a.unit) - getUnitNumber(b.unit);
+            if (byUnit !== 0) return byUnit;
+            return (b.createdAt || 0) - (a.createdAt || 0);
+          });
+
+        return {
+          ...subject,
+          lessons
+        };
+      });
+    }
+
+    function extractYouTubeVideoId(url) {
+      if (!url || typeof url !== "string") return "";
+      const input = url.trim();
+
+      const patterns = [
+        /(?:youtube\.com\/watch\?(?:.*&)?v=)([a-zA-Z0-9_-]{11})/i,
+        /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/i,
+        /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/i,
+        /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/i
+      ];
+
+      for (const pattern of patterns) {
+        const match = input.match(pattern);
+        if (match?.[1]) return match[1];
+      }
+
+      try {
+        const parsed = new URL(input);
+        return parsed.searchParams.get("v") || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function buildFallbackThumbnail(subjectId, unit, title) {
+      const safeSubject = escapeHtml(subjectId);
+      const safeUnit = escapeHtml(unit);
+      const safeTitle = escapeHtml(String(title).slice(0, 34));
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+          <defs>
+            <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0b1324"/>
+              <stop offset="100%" stop-color="#1c2940"/>
+            </linearGradient>
+            <linearGradient id="line" x1="0" x2="1">
+              <stop offset="0%" stop-color="#2563eb"/>
+              <stop offset="50%" stop-color="#8b5cf6"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+          </defs>
+          <rect width="800" height="450" fill="url(#bg)"/>
+          <circle cx="690" cy="85" r="120" fill="rgba(59,130,246,0.16)"/>
+          <circle cx="120" cy="370" r="150" fill="rgba(239,68,68,0.10)"/>
+          <rect x="0" y="0" width="800" height="8" fill="url(#line)"/>
+          <text x="48" y="95" fill="#93c5fd" font-size="30" font-family="Arial, sans-serif">${safeSubject}</text>
+          <text x="48" y="170" fill="#ffffff" font-size="54" font-weight="700" font-family="Arial, sans-serif">UNIT ${safeUnit}</text>
+          <text x="48" y="240" fill="#cbd5e1" font-size="24" font-family="Arial, sans-serif">${safeTitle}</text>
+          <g transform="translate(642 255)">
+            <circle r="58" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>
+            <polygon points="-12,-22 26,0 -12,22" fill="#ffffff"/>
+          </g>
+        </svg>
+      `.trim();
+
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }
+
+    function getThumbnailSource(subjectId, lesson) {
+      const custom = String(lesson.customThumbnail || "").trim();
+      if (custom && isValidImageSource(custom)) return custom;
+
+      const directVideoId = String(lesson.thumbVideoId || "").trim();
+      const extractedVideoId = extractYouTubeVideoId(lesson.url || "");
+      const videoId = directVideoId || extractedVideoId;
+
+      if (videoId) {
+        return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+      }
+
+      return buildFallbackThumbnail(subjectId, lesson.unit, lesson.title);
+    }
+
+    function highlightText(text, query) {
+      const raw = String(text ?? "");
+      const cleanQuery = String(query ?? "").trim();
+      if (!cleanQuery) return escapeHtml(raw);
+
+      const regex = new RegExp(`(${escapeRegExp(cleanQuery)})`, "ig");
+      return raw
+        .split(regex)
+        .map((part) =>
+          part.toLowerCase() === cleanQuery.toLowerCase()
+            ? `<mark>${escapeHtml(part)}</mark>`
+            : escapeHtml(part)
+        )
+        .join("");
+    }
+
+    function renderAdminSubjectOptions(selectedId = state.activeSubject) {
+      adminSubject.innerHTML = SUBJECTS
+        .map(
+          (subject) =>
+            `<option value="${escapeHtml(subject.id)}">${escapeHtml(subject.id)} - ${escapeHtml(subject.name)}</option>`
+        )
+        .join("");
+
+      adminSubject.value = SUBJECTS.some((s) => s.id === selectedId)
+        ? selectedId
+        : SUBJECTS[0].id;
+    }
+
+    function setAdminThumbnailValue(value, label = "") {
+      const cleaned = String(value || "").trim();
+      adminThumbState.currentValue = cleaned;
+
+      if (!cleaned) {
+        adminThumbPreviewPanel.hidden = true;
+        adminThumbPreviewImg.removeAttribute("src");
+        adminThumbPreviewText.textContent = "No custom thumbnail selected.";
+        return;
+      }
+
+      adminThumbPreviewPanel.hidden = false;
+      adminThumbPreviewImg.src = cleaned;
+      adminThumbPreviewText.textContent =
+        label ||
+        (isDataImageUrl(cleaned)
+          ? "Uploaded thumbnail image selected and ready to save."
+          : "Custom thumbnail URL selected and ready to save.");
+    }
+
+    function clearAdminThumbnail() {
+      adminThumbState.currentValue = "";
+      adminCustomThumbUrl.value = "";
+      adminThumbFile.value = "";
+      setAdminThumbnailValue("");
+    }
+
+    function resetAdminForm(keepMessage = false) {
+      adminForm.reset();
+      editingLessonId.value = "";
+      adminFormHeading.textContent = "Add New Recording";
+      adminSubmitText.textContent = "Save Recording";
+      cancelEditBtn.hidden = true;
+      renderAdminSubjectOptions(state.activeSubject || SUBJECTS[0].id);
+      adminPublished.value = "true";
+      clearAdminThumbnail();
+      if (!keepMessage) hideAdminMessage();
+    }
+
+    function createTab(subject, isActive) {
+      const unlocked = isSubjectUnlocked(subject.id);
+      const visibleCount = unlocked ? getLessonsForViewer(subject).length : 0;
+
+      return `
+        <button
+          id="tab-${subject.id}"
+          class="tab-btn subject-${subject.id.toLowerCase()} ${isActive ? "active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${isActive ? "true" : "false"}"
+          aria-controls="panel-${subject.id}"
+          tabindex="${isActive ? "0" : "-1"}"
+          data-subject="${subject.id}"
+        >
+          <span class="tab-icon">${subject.icon}</span>
+          <span class="tab-text">
+            <span class="tab-short">${escapeHtml(subject.id)}</span>
+            <span class="tab-label">${escapeHtml(subject.name)}</span>
+          </span>
+          <span class="tab-count" id="count-${subject.id}">${unlocked ? visibleCount : "🔒"}</span>
+        </button>
+      `;
+    }
+
+    function createMobileSubjectButton(subject, isActive) {
+      const unlocked = isSubjectUnlocked(subject.id);
+      const visibleCount = unlocked ? getLessonsForViewer(subject).length : 0;
+
+      return `
+        <button type="button"
+          class="menu-subject-btn subject-${subject.id.toLowerCase()} ${isActive ? "active" : ""}"
+          data-subject="${subject.id}">
+          <span class="menu-subject-left">
+            <span class="menu-subject-icon">${subject.icon}</span>
+            <span class="menu-subject-text">
+              <strong>${escapeHtml(subject.id)} - ${escapeHtml(subject.name)}</strong>
+              <span>${escapeHtml(subject.description)}</span>
+            </span>
+          </span>
+          <span class="menu-count" id="mcount-${subject.id}">${unlocked ? visibleCount : "🔒"}</span>
+        </button>
+      `;
+    }
+
+    function getWatchButtonLabel(lesson) {
+      if (!isValidHttpUrl(lesson.url)) return "Add YouTube Link";
+      if (!lesson.published && state.isAdmin) return "Preview Draft";
+      if (String(lesson.url).includes("list=")) return "Open Playlist";
+      return "Open Video";
+    }
+
+    function createWatchAction(subject, lesson) {
+      const hasValidUrl = isValidHttpUrl(lesson.url);
+      const buttonText = getWatchButtonLabel(lesson);
+
+      if (hasValidUrl) {
+        return `
+          <a class="watch-btn"
+            href="${escapeHtml(lesson.url)}"
+            target="_blank"
+            rel="noopener noreferrer">
+            <span>${buttonText}</span>
+            <span>↗</span>
+          </a>
+        `;
+      }
+
+      return `
+        <button class="watch-btn disabled" type="button" disabled>
+          <span>${buttonText}</span>
+          <span>↗</span>
+        </button>
+      `;
+    }
+
+    function createCard(subject, lesson) {
+      const subjectClass = `subject-${subject.id.toLowerCase()}`;
+      const thumbSrc = getThumbnailSource(subject.id, lesson);
+      const thumbFallback = buildFallbackThumbnail(subject.id, lesson.unit, lesson.title);
+
+      const searchData = normalizeText([
+        subject.id,
+        subject.name,
+        lesson.unit,
+        lesson.type,
+        lesson.title,
+        lesson.published ? "public" : "draft hidden"
+      ].join(" "));
+
+      return `
+        <article class="record-card ${subjectClass} ${lesson.published ? "" : "draft"}" data-search="${escapeHtml(searchData)}">
+          <div class="thumb-wrap">
+            <img
+              class="thumb-image"
+              src="${thumbSrc}"
+              data-fallback="${thumbFallback}"
+              alt="${escapeHtml(subject.id)} Unit ${escapeHtml(lesson.unit)} thumbnail"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="thumb-overlay"></div>
+            <div class="subject-badge">${escapeHtml(subject.id)}</div>
+            <div class="unit-badge">UNIT ${escapeHtml(lesson.unit)}</div>
+            <div class="type-badge">${escapeHtml(lesson.type)}</div>
+            ${state.isAdmin && !lesson.published ? `<div class="visibility-badge">Draft</div>` : ""}
+            <div class="play-bubble">▶</div>
+          </div>
+
+          <div class="card-body">
+            <div class="meta-row">
+              <span class="meta-pill">📚 ${escapeHtml(subject.name)}</span>
+              <span class="meta-pill">📁 ${escapeHtml(lesson.type)}</span>
+              <span class="meta-pill">${lesson.published ? "👁️ Public" : "🕶️ Draft"}</span>
+              ${lesson.customThumbnail ? `<span class="meta-pill">🖼️ Custom Thumb</span>` : ""}
+            </div>
+
+            <h3 class="card-title" data-original-title="${escapeHtml(lesson.title)}">
+              ${escapeHtml(lesson.title)}
+            </h3>
+
+            <div class="admin-card-tools admin-only" hidden>
+              <button
+                class="admin-mini-btn"
+                type="button"
+                data-admin-action="edit"
+                data-subject="${escapeHtml(subject.id)}"
+                data-lesson-id="${escapeHtml(lesson.id)}"
+              >
+                Edit
+              </button>
+              <button
+                class="admin-mini-btn danger"
+                type="button"
+                data-admin-action="delete"
+                data-subject="${escapeHtml(subject.id)}"
+                data-lesson-id="${escapeHtml(lesson.id)}"
+              >
+                Delete
+              </button>
+            </div>
+
+            <div class="card-actions">
+              ${createWatchAction(subject, lesson)}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function createLockedPanel(subject, isActive) {
+      return `
+        <section
+          id="panel-${subject.id}"
+          class="subject-panel subject-${subject.id.toLowerCase()} ${isActive ? "active" : ""}"
+          role="tabpanel"
+          aria-labelledby="tab-${subject.id}"
+          aria-hidden="${isActive ? "false" : "true"}"
+          ${isActive ? "" : "hidden"}
+        >
+          <div class="panel-head glass-panel">
+            <div class="panel-head-content">
+              <div class="panel-title-group">
+                <h2>${subject.icon} ${escapeHtml(subject.id)} — ${escapeHtml(subject.name)}</h2>
+                <p>${escapeHtml(subject.description)}</p>
+              </div>
+              <div class="panel-stat" id="panel-stat-${subject.id}">
+                Locked
+              </div>
+            </div>
+          </div>
+
+          <div class="subject-lock-card glass-panel">
+            <div class="subject-lock-icon">🔒</div>
+            <h3>${escapeHtml(subject.id)} Section Locked</h3>
+            <p>
+              මේ subject එකේ videos බලන්න password එක enter කරන්න.
+              Password correct නම් ${escapeHtml(subject.id)} recordings විතරක් unlock වෙලා පෙන්වයි.
+            </p>
+
+            <form class="subject-unlock-form" data-unlock-form data-subject="${escapeHtml(subject.id)}">
+              <input
+                class="subject-unlock-input"
+                data-unlock-input
+                type="password"
+                inputmode="numeric"
+                maxlength="4"
+                autocomplete="off"
+                placeholder="Enter ${escapeHtml(subject.id)} password"
+                aria-label="Enter ${escapeHtml(subject.id)} section password"
+                required
+              />
+              <button class="subject-unlock-btn" type="submit">Unlock ${escapeHtml(subject.id)}</button>
+            </form>
+
+            <p class="subject-lock-note">
+             ( copy code after press ctrl + v )
+            </p>
+          </div>
+        </section>
+      `;
+    }
+
+    function createPanel(subject, isActive) {
+      if (!isSubjectUnlocked(subject.id)) {
+        return createLockedPanel(subject, isActive);
+      }
+
+      const viewerLessons = getLessonsForViewer(subject);
+
+      const emptyTitle = state.query
+        ? "No recordings found"
+        : state.isAdmin
+          ? "No recordings yet"
+          : "No published recordings yet";
+
+      const emptyText = state.query
+        ? "Search term එක වෙනස් කරලා නැවත try කරන්න."
+        : state.isAdmin
+          ? "මේ subject එකට recording එකක් add කරන්න."
+          : "Admin විසින් publish කරන recordings මෙතන පෙන්වයි.";
+
+      return `
+        <section
+          id="panel-${subject.id}"
+          class="subject-panel subject-${subject.id.toLowerCase()} ${isActive ? "active" : ""}"
+          role="tabpanel"
+          aria-labelledby="tab-${subject.id}"
+          aria-hidden="${isActive ? "false" : "true"}"
+          ${isActive ? "" : "hidden"}
+        >
+          <div class="panel-head glass-panel">
+            <div class="panel-head-content">
+              <div class="panel-title-group">
+                <h2>${subject.icon} ${escapeHtml(subject.id)} — ${escapeHtml(subject.name)}</h2>
+                <p>${escapeHtml(subject.description)}</p>
+              </div>
+              <div class="panel-stat" id="panel-stat-${subject.id}">
+                ${viewerLessons.length} videos
+              </div>
+            </div>
+          </div>
+
+          <div class="video-grid">
+            ${viewerLessons.map((lesson) => createCard(subject, lesson)).join("")}
+          </div>
+
+          <div class="empty-state glass-panel" id="empty-${subject.id}" ${viewerLessons.length ? "hidden" : ""}>
+            <div class="empty-icon">🔎</div>
+            <h3>${emptyTitle}</h3>
+            <p>${emptyText}</p>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderTabs() {
+      tabsEl.innerHTML = portalData
+        .map((subject) => createTab(subject, subject.id === state.activeSubject))
+        .join("");
+    }
+
+    function renderPanels() {
+      portalContentEl.innerHTML = portalData
+        .map((subject) => createPanel(subject, subject.id === state.activeSubject))
+        .join("");
+
+      bindImageFallbacks();
+      prepareCardAnimation();
+      revealActivePanelCards();
+      updateAdminVisibility();
+    }
+
+    function renderMobileMenuSubjects() {
+      mobileSubjectLinks.innerHTML = portalData
+        .map((subject) => createMobileSubjectButton(subject, subject.id === state.activeSubject))
+        .join("");
+    }
+
+    function bindImageFallbacks() {
+      document.querySelectorAll(".thumb-image").forEach((img) => {
+        img.addEventListener("error", function () {
+          if (this.src !== this.dataset.fallback) {
+            this.src = this.dataset.fallback;
+          }
+        }, { once: true });
+      });
+    }
+
+    function prepareCardAnimation() {
+      document.querySelectorAll(".subject-panel").forEach((panel) => {
+        const cards = panel.querySelectorAll(".record-card");
+        cards.forEach((card, index) => {
+          card.style.setProperty("--delay", `${index * 70}ms`);
+          card.classList.remove("revealed");
+        });
+      });
+    }
+
+    function revealActivePanelCards() {
+      const activePanel = document.getElementById(`panel-${state.activeSubject}`);
+      if (!activePanel) return;
+      const cards = activePanel.querySelectorAll(".record-card:not([hidden])");
+      cards.forEach((card, index) => {
+        card.style.setProperty("--delay", `${index * 60}ms`);
+        card.classList.remove("revealed");
+        requestAnimationFrame(() => card.classList.add("revealed"));
+      });
+    }
+
+    function updateNavigationStates() {
+      tabsEl.querySelectorAll(".tab-btn").forEach((tab) => {
+        const isActive = tab.dataset.subject === state.activeSubject;
+        tab.classList.toggle("active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+        tab.setAttribute("tabindex", isActive ? "0" : "-1");
+      });
+
+      mobileSubjectLinks.querySelectorAll(".menu-subject-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.subject === state.activeSubject);
+      });
+    }
+
+    function setActiveSubject(subjectId, focusTab = false) {
+      state.activeSubject = subjectId;
+
+      document.querySelectorAll(".subject-panel").forEach((panel) => {
+        const isActive = panel.id === `panel-${subjectId}`;
+        panel.classList.toggle("active", isActive);
+        panel.setAttribute("aria-hidden", isActive ? "false" : "true");
+        panel.hidden = !isActive;
+      });
+
+      updateNavigationStates();
+
+      if (focusTab) {
+        const activeTab = document.getElementById(`tab-${subjectId}`);
+        if (activeTab) activeTab.focus();
+      }
+
+      revealActivePanelCards();
+      updateStatus();
+      closeMobileMenu();
+    }
+
+    function applySearch() {
+      state.query = searchInput.value.trim();
+      const query = normalizeText(state.query);
+
+      portalData.forEach((subject) => {
+        const panel = document.getElementById(`panel-${subject.id}`);
+        const statEl = document.getElementById(`panel-stat-${subject.id}`);
+        const tabCountEl = document.getElementById(`count-${subject.id}`);
+        const mobileCountEl = document.getElementById(`mcount-${subject.id}`);
+        const subjectUnlocked = isSubjectUnlocked(subject.id);
+
+        if (!panel) return;
+
+        if (!subjectUnlocked) {
+          if (statEl) statEl.textContent = "Locked";
+          if (tabCountEl) tabCountEl.textContent = "🔒";
+          if (mobileCountEl) mobileCountEl.textContent = "🔒";
+          return;
+        }
+
+        const cards = Array.from(panel.querySelectorAll(".record-card"));
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const haystack = card.dataset.search || "";
+          const matched = !query || haystack.includes(query);
+          card.hidden = !matched;
+          if (matched) visibleCount++;
+
+          const titleEl = card.querySelector(".card-title");
+          if (titleEl) {
+            titleEl.innerHTML = highlightText(titleEl.dataset.originalTitle || "", state.query);
+          }
+        });
+
+        const visibleCards = panel.querySelectorAll(".record-card:not([hidden])");
+        visibleCards.forEach((card, index) => {
+          card.style.setProperty("--delay", `${index * 55}ms`);
+          if (!card.classList.contains("revealed")) {
+            requestAnimationFrame(() => card.classList.add("revealed"));
+          }
+        });
+
+        const emptyState = document.getElementById(`empty-${subject.id}`);
+
+        if (emptyState) emptyState.hidden = visibleCount !== 0;
+        if (statEl) statEl.textContent = `${visibleCount} video${visibleCount === 1 ? "" : "s"}`;
+        if (tabCountEl) tabCountEl.textContent = visibleCount;
+        if (mobileCountEl) mobileCountEl.textContent = visibleCount;
+      });
+
+      clearSearchBtn.classList.toggle("visible", Boolean(state.query));
+      updateStatus();
+    }
+
+    function updateCloudStatusChip() {
+      if (state.cloudMode === "live" && state.cloudConnected) {
+        cloudStatusChip.textContent = "Cloud: Live";
+      } else if (state.cloudMode === "demo") {
+        cloudStatusChip.textContent = "Cloud: Demo Read-Only";
+      } else if (state.cloudMode === "error") {
+        cloudStatusChip.textContent = "Cloud: Error / Fallback";
+      } else {
+        cloudStatusChip.textContent = "Cloud: Connecting...";
+      }
+    }
+
+    function updateShieldStatusChip() {
+      shieldStatusChip.textContent = state.isAdmin
+        ? "Permissions: Admin • Inspect Unlocked"
+        : "Permissions: Viewer • Subject Password Locked";
+    }
+
+    function updateStatus() {
+      const activeSubject = portalData.find((subject) => subject.id === state.activeSubject);
+      const activePanel = document.getElementById(`panel-${state.activeSubject}`);
+      const activeLocked = activeSubject ? !isSubjectUnlocked(activeSubject.id) : false;
+
+      const visibleInActive = activePanel
+        ? activePanel.querySelectorAll(".record-card:not([hidden])").length
+        : 0;
+
+      const visibleTotal = document.querySelectorAll(".record-card:not([hidden])").length;
+      const overallTotal = getViewerLessonTotal();
+      const totalDrafts = portalData.reduce(
+        (count, subject) => count + subject.lessons.filter((lesson) => !lesson.published).length,
+        0
+      );
+      const lockedSections = state.isAdmin
+        ? 0
+        : SUBJECTS.filter((subject) => !isSubjectUnlocked(subject.id)).length;
+
+      totalCountChip.textContent = state.isAdmin
+        ? `${overallTotal} Videos`
+        : `${overallTotal} Videos Unlocked`;
+
+      activeSubjectLabel.textContent = activeSubject
+        ? `Active: ${activeSubject.icon} ${activeSubject.id} — ${activeSubject.name}${activeLocked ? " • Locked" : " • Unlocked"}`
+        : "Active: -";
+
+      visibleCountLabel.textContent = activeLocked
+        ? `${state.activeSubject} section locked • password required`
+        : state.query
+          ? `Showing ${visibleInActive} result${visibleInActive === 1 ? "" : "s"} in ${state.activeSubject}`
+          : `Showing ${visibleInActive} video${visibleInActive === 1 ? "" : "s"} in ${state.activeSubject}`;
+
+      filteredTotalLabel.textContent = state.query
+        ? state.isAdmin
+          ? `Portal Results: ${visibleTotal}`
+          : `Unlocked Results: ${visibleTotal} • Locked Sections: ${lockedSections}`
+        : state.isAdmin
+          ? `Portal Total: ${overallTotal} • Drafts: ${totalDrafts}`
+          : `Unlocked Total: ${overallTotal} • Locked Sections: ${lockedSections}`;
+
+      if (state.isAdmin) {
+        adminStatusChip.textContent = `Admin Mode: ON • All sections unlocked • Inspect unlocked`;
+      }
+
+      updateCloudStatusChip();
+      updateShieldStatusChip();
+    }
+
+    function updateAdminAuthButtons() {
+      const label = state.isAdmin ? "Admin Logout" : "Admin Login";
+      const icon = state.isAdmin ? "🚪" : "🔐";
+
+      [adminAuthBtnDesktop, adminAuthBtnMobile].forEach((btn) => {
+        if (!btn) return;
+        const iconEl = btn.querySelector(".admin-auth-icon");
+        const labelEl = btn.querySelector(".admin-auth-label");
+        if (iconEl) iconEl.textContent = icon;
+        if (labelEl) labelEl.textContent = label;
+        btn.setAttribute("aria-label", label);
+        btn.setAttribute("title", label);
+      });
+    }
+
+    function updateAdminVisibility() {
+      document.querySelectorAll(".admin-only").forEach((element) => {
+        element.hidden = !state.isAdmin;
+      });
+
+      adminPanel.hidden = !state.isAdmin;
+      adminStatusChip.hidden = !state.isAdmin;
+      mobileOpenAdminPanel.hidden = !state.isAdmin;
+
+      if (!state.isAdmin) {
+        hideAdminMessage();
+      }
+
+      updateAdminAuthButtons();
+      updateShieldStatusChip();
+      persistAdminUnlockFlag();
+    }
+
+    function rerenderPortal(preferredSubjectId = state.activeSubject) {
+      if (!portalData.some((subject) => subject.id === preferredSubjectId)) {
+        preferredSubjectId = SUBJECTS[0]?.id || "";
+      }
+
+      state.activeSubject = preferredSubjectId;
+      renderTabs();
+      renderPanels();
+      renderMobileMenuSubjects();
+      renderAdminSubjectOptions(preferredSubjectId);
+      setActiveSubject(preferredSubjectId);
+      applySearch();
+      updateAdminVisibility();
+      updateStatus();
+    }
+
+    function handleTabClick(event) {
+      const button = event.target.closest(".tab-btn");
+      if (!button) return;
+      setActiveSubject(button.dataset.subject);
+    }
+
+    function handleTabKeyboard(event) {
+      const tabs = Array.from(tabsEl.querySelectorAll('[role="tab"]'));
+      if (!tabs.length) return;
+
+      const currentIndex = tabs.findIndex((tab) => tab.dataset.subject === state.activeSubject);
+      let nextIndex = currentIndex;
+
+      switch (event.key) {
+        case "ArrowRight":
+        case "ArrowDown":
+          nextIndex = (currentIndex + 1) % tabs.length;
+          break;
+        case "ArrowLeft":
+        case "ArrowUp":
+          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case "Home":
+          nextIndex = 0;
+          break;
+        case "End":
+          nextIndex = tabs.length - 1;
+          break;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+      setActiveSubject(tabs[nextIndex].dataset.subject, true);
+    }
+
+    function clearSearch() {
+      searchInput.value = "";
+      applySearch();
+      searchInput.focus();
+    }
+
+    function openMobileMenu() {
+      if (window.innerWidth > 760) return;
+      state.mobileMenuOpen = true;
+      mobileMenu.hidden = false;
+      requestAnimationFrame(() => mobileMenu.classList.add("open"));
+      mobileMenuToggle.setAttribute("aria-expanded", "true");
+      document.body.classList.add("menu-open");
+    }
+
+    function closeMobileMenu() {
+      state.mobileMenuOpen = false;
+      mobileMenu.classList.remove("open");
+      mobileMenuToggle.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("menu-open");
+      setTimeout(() => {
+        if (!state.mobileMenuOpen) mobileMenu.hidden = true;
+      }, 220);
+    }
+
+    function toggleMobileMenu() {
+      state.mobileMenuOpen ? closeMobileMenu() : openMobileMenu();
+    }
+
+    function findLesson(subjectId, lessonId) {
+      const subject = portalData.find((item) => item.id === subjectId);
+      if (!subject) return null;
+      const lesson = subject.lessons.find((item) => item.id === lessonId);
+      return lesson ? { subject, lesson } : null;
+    }
+
+    function openAdminPanel() {
+      if (!state.isAdmin) return;
+      adminPanel.hidden = false;
+      adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function populateAdminFormForEdit(subjectId, lessonId) {
+      if (!state.isAdmin) return;
+      const found = findLesson(subjectId, lessonId);
+      if (!found) return;
+
+      const lesson = found.lesson;
+
+      adminFormHeading.textContent = "Edit Recording";
+      adminSubmitText.textContent = "Update Recording";
+      cancelEditBtn.hidden = false;
+
+      editingLessonId.value = lesson.id;
+      renderAdminSubjectOptions(subjectId);
+
+      adminSubject.value = subjectId;
+      adminUnit.value = lesson.unit;
+      adminType.value = lesson.type;
+      adminPublished.value = lesson.published ? "true" : "false";
+      adminTitle.value = lesson.title;
+      adminUrl.value = lesson.url;
+      adminThumbVideoId.value = lesson.thumbVideoId;
+      adminCustomThumbUrl.value =
+        lesson.customThumbnail && !isDataImageUrl(lesson.customThumbnail)
+          ? lesson.customThumbnail
+          : "";
+
+      adminThumbFile.value = "";
+      setAdminThumbnailValue(
+        lesson.customThumbnail || "",
+        lesson.customThumbnail
+          ? isDataImageUrl(lesson.customThumbnail)
+            ? "Current uploaded thumbnail loaded."
+            : "Current custom thumbnail URL loaded."
+          : ""
+      );
+
+      hideAdminMessage();
+      setActiveSubject(subjectId);
+      openAdminPanel();
+    }
+
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("File reading failed."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function loadImageElement(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Image load failed."));
+        img.src = src;
+      });
+    }
+
+    async function compressImageFile(file) {
+      const dataUrl = await fileToDataURL(file);
+      const img = await loadImageElement(dataUrl);
+
+      const maxWidth = 1280;
+      const maxHeight = 720;
+
+      let width = img.width;
+      let height = img.height;
+
+      const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+      width = Math.max(1, Math.round(width * scale));
+      height = Math.max(1, Math.round(height * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return dataUrl;
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      try {
+        return canvas.toDataURL("image/jpeg", 0.84);
+      } catch {
+        return dataUrl;
+      }
+    }
+
+    async function handleThumbFileChange() {
+      const file = adminThumbFile.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        showAdminMessage("Image file එකක් select කරන්න.", "error");
+        adminThumbFile.value = "";
+        return;
+      }
+
+      try {
+        showAdminMessage("Thumbnail image compress කරනවා...", "success");
+        const compressed = await compressImageFile(file);
+        setAdminThumbnailValue(compressed, "Uploaded thumbnail image selected and compressed.");
+        adminCustomThumbUrl.value = "";
+        showAdminMessage("Thumbnail image uploaded successfully.", "success");
+      } catch {
+        showAdminMessage("Image upload failed. නැවත try කරන්න.", "error");
+      }
+    }
+
+    function applyCustomThumbUrl() {
+      const value = adminCustomThumbUrl.value.trim();
+
+      if (!value) {
+        showAdminMessage("Custom thumbnail URL එකක් enter කරන්න.", "error");
+        return;
+      }
+
+      if (!isValidHttpUrl(value)) {
+        showAdminMessage("Valid http/https thumbnail URL එකක් දෙන්න.", "error");
+        return;
+      }
+
+      adminThumbFile.value = "";
+      setAdminThumbnailValue(value, "Custom thumbnail URL selected and ready to save.");
+      showAdminMessage("Custom thumbnail URL applied successfully.", "success");
+    }
+
+    async function addRecordingToCloud(payload) {
+      await addDoc(collection(db, "recordings"), {
+        ...payload,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    }
+
+    async function updateRecordingInCloud(id, payload) {
+      await updateDoc(doc(db, "recordings", id), {
+        ...payload,
+        updatedAt: serverTimestamp()
+      });
+    }
+
+    async function deleteRecordingFromCloud(id) {
+      await deleteDoc(doc(db, "recordings", id));
+    }
+
+    async function restoreDefaultCloudData() {
+      const batch = writeBatch(db);
+      const existing = await getDocs(collection(db, "recordings"));
+
+      existing.forEach((snapshotDoc) => {
+        batch.delete(snapshotDoc.ref);
+      });
+
+      DEFAULT_RECORDINGS.forEach((record) => {
+        const ref = doc(collection(db, "recordings"));
+        batch.set(ref, {
+          ...record,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      });
+
+      await batch.commit();
+    }
+
+    async function handleAdminFormSubmit(event) {
+      event.preventDefault();
+
+      if (!state.isAdmin || !db) {
+        showAdminMessage("Admin cloud access required.", "error");
+        return;
+      }
+
+      const subjectId = adminSubject.value.trim();
+      const customUrlValue = adminCustomThumbUrl.value.trim();
+      let finalCustomThumbnail = adminThumbState.currentValue;
+
+      if (customUrlValue) {
+        if (!isValidHttpUrl(customUrlValue)) {
+          showAdminMessage("Valid custom thumbnail URL එකක් දෙන්න.", "error");
+          return;
+        }
+        finalCustomThumbnail = customUrlValue;
+      }
+
+      const payload = {
+        subjectId,
+        unit: adminUnit.value.trim(),
+        type: adminType.value.trim(),
+        title: adminTitle.value.trim(),
+        url: adminUrl.value.trim(),
+        thumbVideoId: adminThumbVideoId.value.trim(),
+        customThumbnail: finalCustomThumbnail.trim(),
+        published: adminPublished.value === "true"
+      };
+
+      if (!payload.subjectId || !payload.unit || !payload.type || !payload.title) {
+        showAdminMessage("Subject, unit, type, title fields required.", "error");
+        return;
+      }
+
+      if (payload.url && !isValidHttpUrl(payload.url)) {
+        showAdminMessage("Valid http/https URL එකක් දෙන්න.", "error");
+        return;
+      }
+
+      if (payload.thumbVideoId && !/^[A-Za-z0-9_-]{11}$/.test(payload.thumbVideoId)) {
+        showAdminMessage("thumbVideoId field එකේ valid YouTube video ID (11 chars) එකක් දෙන්න.", "error");
+        return;
+      }
+
+      if (payload.customThumbnail && !isValidImageSource(payload.customThumbnail)) {
+        showAdminMessage("Custom thumbnail source valid නැහැ.", "error");
+        return;
+      }
+
+      const editId = editingLessonId.value.trim();
+
+      try {
+        if (editId) {
+          await updateRecordingInCloud(editId, payload);
+          rerenderPortal(subjectId);
+          resetAdminForm(true);
+          showAdminMessage(
+            payload.published
+              ? "Recording updated and published successfully."
+              : "Recording updated as hidden draft.",
+            "success"
+          );
+          return;
+        }
+
+        await addRecordingToCloud(payload);
+        rerenderPortal(subjectId);
+        resetAdminForm(true);
+        showAdminMessage(
+          payload.published
+            ? "Recording saved and published successfully."
+            : "Recording saved as hidden draft.",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+        showAdminMessage("Cloud save failed. Firestore rules / internet check කරන්න.", "error");
+      }
+    }
+
+    async function deleteLesson(subjectId, lessonId) {
+      if (!state.isAdmin || !db) return;
+
+      const found = findLesson(subjectId, lessonId);
+      if (!found) return;
+
+      const confirmed = confirm(`"${found.lesson.title}" recording එක delete කරන්නද?`);
+      if (!confirmed) return;
+
+      try {
+        await deleteRecordingFromCloud(lessonId);
+        if (editingLessonId.value === lessonId) resetAdminForm();
+        rerenderPortal(subjectId);
+        showAdminMessage("Recording deleted successfully.", "success");
+      } catch (error) {
+        console.error(error);
+        showAdminMessage("Delete failed. Firestore rules / network check කරන්න.", "error");
+      }
+    }
+
+    async function resetPortalToDefault() {
+      if (!state.isAdmin || !db) return;
+
+      const confirmed = confirm(
+        "Cloud data default state එකට restore කරන්නද? මේක undo කරන්න බැහැ."
+      );
+      if (!confirmed) return;
+
+      try {
+        await restoreDefaultCloudData();
+        rerenderPortal(SUBJECTS[0].id);
+        resetAdminForm(true);
+        showAdminMessage("Cloud data restored to default successfully.", "success");
+      } catch (error) {
+        console.error(error);
+        showAdminMessage("Reset failed. Firestore rules / network check කරන්න.", "error");
+      }
+    }
+
+    async function syncAdminStateFromUser(user) {
+      const previousAdminState = state.isAdmin;
+
+      if (!user) {
+        state.isAdmin = false;
+      } else {
+        try {
+          const tokenResult = await getIdTokenResult(user, true);
+          state.isAdmin = !!tokenResult.claims?.[ADMIN_REQUIRED_CLAIM];
+        } catch {
+          state.isAdmin = false;
+        }
+      }
+
+      persistAdminUnlockFlag();
+
+      if (!state.isAdmin) {
+        resetAdminForm(true);
+      }
+
+      if (previousAdminState !== state.isAdmin) {
+        rerenderPortal(state.activeSubject);
+      } else {
+        updateAdminVisibility();
+        updateStatus();
+      }
+    }
+
+    function openAuthModal() {
+      if (!state.firebaseConfigured) {
+        showToast("Firebase config set කරලා නැති නිසා secure admin login disabled.", "error", 3200);
+        return;
+      }
+
+      authError.hidden = true;
+      adminEmailInput.value = "";
+      adminPasswordInput.value = "";
+      authModal.hidden = false;
+      requestAnimationFrame(() => authModal.classList.add("open"));
+      setTimeout(() => adminEmailInput.focus(), 30);
+    }
+
+    function closeAuthModal() {
+      authModal.classList.remove("open");
+      setTimeout(() => {
+        if (!authModal.classList.contains("open")) authModal.hidden = true;
+      }, 220);
+    }
+
+    function openAboutModal() {
+      aboutModal.hidden = false;
+      requestAnimationFrame(() => aboutModal.classList.add("open"));
+    }
+
+    function closeAboutModal() {
+      aboutModal.classList.remove("open");
+      setTimeout(() => {
+        if (!aboutModal.classList.contains("open")) aboutModal.hidden = true;
+      }, 220);
+    }
+
+    async function handleAdminAuthAction() {
+      if (state.isAdmin && auth) {
+        const confirmed = confirm("Admin mode logout කරන්නද?");
+        if (!confirmed) return;
+
+        try {
+          await signOut(auth);
+          state.isAdmin = false;
+          persistAdminUnlockFlag();
+          rerenderPortal(state.activeSubject);
+          hideAdminMessage();
+          resetAdminForm(true);
+          showToast("Admin logged out. Subject passwords active again.", "info");
+        } catch (error) {
+          console.error(error);
+          showToast("Logout failed.", "error");
+        }
+        return;
+      }
+
+      closeMobileMenu();
+      openAuthModal();
+    }
+
+    async function handleAdminLogin(event) {
+      event.preventDefault();
+
+      if (!state.firebaseConfigured || !auth) {
+        authError.textContent = "Firebase config missing. Secure login unavailable.";
+        authError.hidden = false;
+        return;
+      }
+
+      authError.hidden = true;
+
+      try {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          adminEmailInput.value.trim(),
+          adminPasswordInput.value
+        );
+
+        const tokenResult = await getIdTokenResult(credential.user, true);
+        const hasAdminClaim = !!tokenResult.claims?.[ADMIN_REQUIRED_CLAIM];
+
+        state.isAdmin = true;
+        state.guardTriggered = false;
+        persistAdminUnlockFlag();
+        rerenderPortal(state.activeSubject);
+        closeAuthModal();
+        resetAdminForm(true);
+        openAdminPanel();
+        showToast("Admin unlocked successfully. All sections opened.", "success", 3200);
+      } catch (error) {
+        console.error(error);
+        state.isAdmin = false;
+        persistAdminUnlockFlag();
+        rerenderPortal(state.activeSubject);
+        authError.textContent = "Login failed. Email/password හෝ admin claim check කරන්න.";
+        authError.hidden = false;
+      }
+    }
+
+    function handlePortalContentClick(event) {
+      const adminActionBtn = event.target.closest("[data-admin-action]");
+      if (!adminActionBtn || !state.isAdmin) return;
+
+      const action = adminActionBtn.dataset.adminAction;
+      const subjectId = adminActionBtn.dataset.subject;
+      const lessonId = adminActionBtn.dataset.lessonId;
+
+      if (action === "edit") populateAdminFormForEdit(subjectId, lessonId);
+      if (action === "delete") deleteLesson(subjectId, lessonId);
+    }
+
+    function handlePortalContentSubmit(event) {
+      const unlockForm = event.target.closest("[data-unlock-form]");
+      if (!unlockForm) return;
+
+      event.preventDefault();
+
+      if (state.isAdmin) {
+        showToast("Admin mode active. Passwords are bypassed.", "info");
+        return;
+      }
+
+      const subjectId = unlockForm.dataset.subject;
+      const input = unlockForm.querySelector("[data-unlock-input]");
+      const enteredPassword = String(input?.value || "").trim();
+
+      if (!SUBJECT_PASSWORDS[subjectId]) {
+        showToast("Password not configured for this subject.", "error");
+        return;
+      }
+
+      if (enteredPassword === SUBJECT_PASSWORDS[subjectId]) {
+        unlockSubject(subjectId);
+        rerenderPortal(subjectId);
+        showToast(`${subjectId} section unlocked successfully.`, "success", 2600);
+      } else {
+        if (input) {
+          input.value = "";
+          input.focus();
+        }
+        showToast(`Incorrect password for ${subjectId}.`, "error", 3000);
+      }
+    }
+
+    async function fallbackCopyText(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+
+    async function copyText(value, label) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+        } else {
+          await fallbackCopyText(value);
+        }
+        showToast(`${label} copied successfully.`, "success");
+      } catch {
+        showToast(`Copy failed for ${label}.`, "error");
+      }
+    }
+
+    async function initFirebase() {
+      state.firebaseConfigured = isFirebaseConfigured();
+
+      if (!state.firebaseConfigured) {
+        state.cloudMode = "demo";
+        state.cloudConnected = false;
+        portalData = buildPortalData(
+          DEFAULT_RECORDINGS.map((item, index) => ({
+            ...item,
+            id: `demo-${index + 1}`,
+            createdAt: index + 1
+          }))
+        );
+        rerenderPortal(state.activeSubject);
+        showToast("Firebase config නැති නිසා demo read-only mode active.", "info", 3200);
+        return;
+      }
+
+      try {
+        firebaseApp = initializeApp(FIREBASE_CONFIG);
+        auth = getAuth(firebaseApp);
+        db = getFirestore(firebaseApp);
+        await setPersistence(auth, browserSessionPersistence);
+
+        state.cloudMode = "live";
+        updateCloudStatusChip();
+
+        onAuthStateChanged(auth, async (user) => {
+          await syncAdminStateFromUser(user);
+        });
+
+        unsubscribeRecordings = onSnapshot(
+          collection(db, "recordings"),
+          (snapshot) => {
+            const records = [];
+            snapshot.forEach((docSnap) => {
+              records.push(normalizeCloudRecord(docSnap.data(), docSnap.id));
+            });
+
+            portalData = buildPortalData(records);
+            state.cloudConnected = true;
+            state.cloudMode = "live";
+            rerenderPortal(state.activeSubject);
+          },
+          (error) => {
+            console.error(error);
+            state.cloudMode = "error";
+            state.cloudConnected = false;
+            portalData = buildPortalData(
+              DEFAULT_RECORDINGS.map((item, index) => ({
+                ...item,
+                id: `fallback-${index + 1}`,
+                createdAt: index + 1
+              }))
+            );
+            rerenderPortal(state.activeSubject);
+            showToast("Cloud read failed. Fallback view active.", "error", 3400);
+          }
+        );
+      } catch (error) {
+        console.error(error);
+        state.cloudMode = "error";
+        state.cloudConnected = false;
+        portalData = buildPortalData(
+          DEFAULT_RECORDINGS.map((item, index) => ({
+            ...item,
+            id: `fallback-${index + 1}`,
+            createdAt: index + 1
+          }))
+        );
+        rerenderPortal(state.activeSubject);
+        showToast("Firebase initialization failed.", "error", 3200);
+      }
+    }
+
+    function initStaticUI() {
+      renderAdminSubjectOptions(state.activeSubject);
+      rerenderPortal(state.activeSubject);
+      setTheme(getCurrentTheme());
+      updateAdminVisibility();
+      resetAdminForm(true);
+      initInspectGuards();
+      runBootGuardExitIfNeeded();
+
+      tabsEl.addEventListener("click", handleTabClick);
+      tabsEl.addEventListener("keydown", handleTabKeyboard);
+      portalContentEl.addEventListener("click", handlePortalContentClick);
+      portalContentEl.addEventListener("submit", handlePortalContentSubmit);
+
+      mobileSubjectLinks.addEventListener("click", (event) => {
+        const btn = event.target.closest(".menu-subject-btn");
+        if (!btn) return;
+        setActiveSubject(btn.dataset.subject);
+      });
+
+      searchInput.addEventListener("input", applySearch);
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") clearSearch();
+      });
+
+      clearSearchBtn.addEventListener("click", clearSearch);
+      mobileClearSearch.addEventListener("click", () => {
+        clearSearch();
+        closeMobileMenu();
+      });
+
+      document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+        btn.addEventListener("click", toggleTheme);
+      });
+
+      adminAuthBtnDesktop.addEventListener("click", handleAdminAuthAction);
+      adminAuthBtnMobile.addEventListener("click", handleAdminAuthAction);
+
+      adminForm.addEventListener("submit", handleAdminFormSubmit);
+      cancelEditBtn.addEventListener("click", () => resetAdminForm());
+      clearAdminFormBtn.addEventListener("click", () => resetAdminForm());
+      resetPortalBtn.addEventListener("click", resetPortalToDefault);
+
+      mobileOpenAdminPanel.addEventListener("click", () => {
+        openAdminPanel();
+        closeMobileMenu();
+      });
+
+      applyThumbUrlBtn.addEventListener("click", applyCustomThumbUrl);
+      clearCustomThumbBtn.addEventListener("click", () => {
+        clearAdminThumbnail();
+        showAdminMessage("Custom thumbnail removed.", "success");
+      });
+      clearCustomThumbBtnInline.addEventListener("click", () => {
+        clearAdminThumbnail();
+        showAdminMessage("Custom thumbnail removed.", "success");
+      });
+
+      adminThumbFile.addEventListener("change", handleThumbFileChange);
+      adminCustomThumbUrl.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          applyCustomThumbUrl();
+        }
+      });
+
+      adminThumbPreviewImg.addEventListener("error", () => {
+        adminThumbPreviewText.textContent = "Preview failed. වෙන image URL එකක් try කරන්න.";
+      });
+
+      mobileMenuToggle.addEventListener("click", toggleMobileMenu);
+      mobileMenuClose.addEventListener("click", closeMobileMenu);
+
+      adminLoginForm.addEventListener("submit", handleAdminLogin);
+      authModalClose.addEventListener("click", closeAuthModal);
+      authCancelBtn.addEventListener("click", closeAuthModal);
+
+      authModal.addEventListener("click", (event) => {
+        if (event.target === authModal) closeAuthModal();
+      });
+
+      aboutBtnDesktop.addEventListener("click", openAboutModal);
+      aboutBtnMobile.addEventListener("click", () => {
+        closeMobileMenu();
+        openAboutModal();
+      });
+      aboutModalClose.addEventListener("click", closeAboutModal);
+      aboutModal.addEventListener("click", (event) => {
+        if (event.target === aboutModal) closeAboutModal();
+      });
+
+      copyEmailBtn.addEventListener("click", () => copyText("Kdkiviru@gmail.com", "Email"));
+      copyPhoneBtn.addEventListener("click", () => copyText("+94 74 164 2609", "Number"));
+
+      document.addEventListener("click", (event) => {
+        if (!state.mobileMenuOpen) return;
+        const clickedInsideMenu = mobileMenu.contains(event.target);
+        const clickedToggle = mobileMenuToggle.contains(event.target);
+        if (!clickedInsideMenu && !clickedToggle) closeMobileMenu();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && state.mobileMenuOpen) closeMobileMenu();
+        if (event.key === "Escape" && !authModal.hidden) closeAuthModal();
+        if (event.key === "Escape" && !aboutModal.hidden) closeAboutModal();
+      });
+
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 760) closeMobileMenu();
+      });
+
+      window.addEventListener("load", () => {
+        setTimeout(hideLoader, 700);
+      });
+
+      setTimeout(hideLoader, 2200);
+    }
+
+    initStaticUI();
+    initFirebase();
+
+    window.addEventListener("beforeunload", () => {
+      if (typeof unsubscribeRecordings === "function") {
+        unsubscribeRecordings();
+      }
+      if (sizeGuardInterval) clearInterval(sizeGuardInterval);
+      if (debuggerGuardInterval) clearInterval(debuggerGuardInterval);
+    });
+  </script>
+</body>
+</html>
