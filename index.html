@@ -1148,10 +1148,10 @@
         inset 0 1px 0 rgba(255,255,255,0.08),
         inset 0 -1px 0 rgba(0,0,0,0.15);
       transition:
-        transform 0.30s ease,
-        box-shadow 0.30s ease,
-        border-color 0.30s ease,
-        background 0.30s ease;
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.5s ease,
+        border-color 0.5s ease,
+        background 0.5s ease;
       display: flex;
       flex-direction: column;
       min-height: 100%;
@@ -1202,11 +1202,24 @@
     }
 
     .record-card:hover {
-      transform: translateY(-8px) scale(1.01);
+      transform: translateY(-20px) scale(1.06); /* More height and scale */
       box-shadow:
-        0 36px 70px rgba(0,0,0,0.32),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-      border-color: var(--border-strong);
+        0 50px 100px rgba(0,0,0,0.6), /* Deep dark shadow */
+        0 20px 40px rgba(0,0,0,0.4),
+        0 0 0 2px rgba(255, 255, 255, 0.2), /* White border glow */
+        0 0 40px rgba(255, 255, 255, 0.1), /* outer glow */
+        inset 0 1px 0 rgba(255,255,255,0.25);
+      border-color: transparent;
+      z-index: 10;
+    }
+
+    :root[data-theme="light"] .record-card:hover {
+      box-shadow:
+        0 50px 100px rgba(15, 23, 42, 0.2),
+        0 20px 40px rgba(15, 23, 42, 0.12),
+        0 0 0 2px rgba(37, 99, 235, 0.35),
+        0 0 40px rgba(37, 99, 235, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
     }
 
     .thumb-wrap {
@@ -1227,9 +1240,9 @@
     }
 
     .record-card:hover .thumb-wrap img {
-      transform: scale(1.06);
+      transform: scale(1.12); /* Zoom in more inside the card */
       opacity: 1;
-      filter: saturate(1.10) contrast(1.02);
+      filter: saturate(1.2) contrast(1.1);
     }
 
     .thumb-overlay {
@@ -1291,6 +1304,28 @@
         0 10px 25px rgba(0,0,0,0.22),
         inset 0 1px 0 rgba(255,255,255,0.14);
       backdrop-filter: blur(12px);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+    }
+
+    .record-card.subject-et:hover .play-bubble {
+      transform: scale(1.2);
+      background: linear-gradient(135deg, var(--et-1), var(--et-2));
+      border-color: transparent;
+      box-shadow: 0 12px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .record-card.subject-it:hover .play-bubble {
+      transform: scale(1.2);
+      background: linear-gradient(135deg, var(--it-1), var(--it-2));
+      border-color: transparent;
+      box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+    }
+
+    .record-card.subject-sft:hover .play-bubble {
+      transform: scale(1.2);
+      background: linear-gradient(135deg, var(--sft-1), var(--sft-2));
+      border-color: transparent;
+      box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
     }
 
     .card-body {
@@ -1570,6 +1605,30 @@
       white-space: nowrap;
     }
 
+    /* --- New Styles for Features --- */
+    .notice-banner {
+      margin-top: 22px;
+      padding: 12px 18px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(239, 68, 68, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .log-item {
+      padding: 14px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .log-item:last-child { border-bottom: none; }
+    .log-item small { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
+    .log-item span { font-size: 0.9rem; word-break: break-all; }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1719,6 +1778,15 @@
   <div class="bg-orb orb-2"></div>
   <div class="bg-orb orb-3"></div>
 
+  <div class="guard-backdrop open" id="entryScreen" style="z-index: 10000; background: var(--page-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);">
+    <div class="modal-box glass-panel" style="text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+      <div class="about-logo" style="margin: 0 auto 18px; width: 64px; height: 64px; font-size: 1.2rem;">KD</div>
+      <h2 style="margin: 0 0 8px; font-size: 1.5rem;">Student Portal</h2>
+      <p style="color: var(--muted); margin: 0 0 24px; line-height: 1.6;">Secure gateway for A/L recordings.<br/>Please click below to verify and enter.</p>
+      <button id="enterPortalBtn" class="auth-btn primary" style="width: 100%; justify-content: center; font-size: 1.05rem; min-height: 52px;">Login / Enter Portal</button>
+    </div>
+  </div>
+
   <div class="maker-badge" aria-label="Made by Kiviru Daham Creator">
     <div class="maker-logo">KD</div>
     <div class="maker-copy">
@@ -1842,6 +1910,13 @@
       <p class="hero-sub">
         ET, IT, SFT sections password protect කරලා තියෙනවා.
       </p>
+
+      <div id="noticeBanner" class="notice-banner" hidden>
+        <span style="font-size: 1.4rem;">📢</span>
+        <div style="flex: 1; overflow: hidden; display: flex; align-items: center;">
+          <marquee id="noticeTextDisplay" scrollamount="6" style="font-weight: 700; color: var(--warning); letter-spacing: 0.02em;"></marquee>
+        </div>
+      </div>
 
       <div class="toolbar">
         <div class="tabs-wrap glass-panel">
@@ -1989,6 +2064,50 @@
       </form>
     </section>
 
+    <section class="admin-panel glass-panel admin-only" hidden>
+      <div class="admin-top">
+        <div>
+          <div class="admin-pill">Admin Only</div>
+          <h2>Manage Notice Board</h2>
+          <p>Portal එක උඩින්ම පේන Alert එක මෙතනින් වෙනස් කරන්න.</p>
+        </div>
+      </div>
+      <form class="admin-form" id="noticeForm">
+        <div class="admin-grid">
+          <div class="admin-field full">
+            <label for="adminNoticeText">Notice Message</label>
+            <input id="adminNoticeText" type="text" placeholder="Type notice here..." required />
+          </div>
+          <div class="admin-field">
+            <label for="adminNoticeActive">Visibility</label>
+            <select id="adminNoticeActive">
+              <option value="true">Show Notice</option>
+              <option value="false">Hide Notice</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-actions" style="margin-top:18px;">
+          <button class="admin-primary-btn" type="submit">Publish Notice</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="admin-panel glass-panel admin-only" hidden>
+      <div class="admin-top">
+        <div>
+          <div class="admin-pill">Admin Only • Security</div>
+          <h2>Access Logs <span id="uniqueDeviceCount" style="font-size: 1rem; color: var(--success); margin-left: 10px; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 12px;">Unique Devices: 0</span></h2>
+          <p>ළමයි Portal එකට ඇතුල් වුණ වෙලාව සහ Device (Browser) විස්තර.</p>
+        </div>
+        <div class="admin-top-actions">
+          <button class="admin-secondary-btn danger" type="button" id="clearLogsBtn">Clear All Logs</button>
+        </div>
+      </div>
+      <div class="admin-form" style="margin-top: 18px; max-height: 400px; overflow-y: auto; background: var(--surface-alt); border-radius: 16px; border: 1px solid var(--border-soft);" id="adminLogsContainer">
+        <div style="padding: 16px; text-align: center; color: var(--muted);">Logs loading...</div>
+      </div>
+    </section>
+
     <main id="portalContent" class="portal-content"></main>
   </div>
 
@@ -2110,7 +2229,11 @@
       doc,
       getDocs,
       writeBatch,
-      serverTimestamp
+      serverTimestamp,
+      increment,
+      setDoc,
+      query,
+      limit
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const FIREBASE_CONFIG = {
@@ -2161,7 +2284,8 @@
         url: "https://www.youtube.com/playlist?list=PLQDDk_9PVPrvdoIXYbUYu3SafqGl5rh-D",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "ET",
@@ -2171,7 +2295,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "ET",
@@ -2181,7 +2306,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "IT",
@@ -2191,7 +2317,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "IT",
@@ -2201,7 +2328,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "IT",
@@ -2211,7 +2339,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "SFT",
@@ -2221,7 +2350,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "SFT",
@@ -2231,7 +2361,8 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       },
       {
         subjectId: "SFT",
@@ -2241,13 +2372,14 @@
         url: "",
         thumbVideoId: "",
         customThumbnail: "",
-        published: true
+        published: true,
+        views: 0
       }
     ];
 
     function loadUnlockedSubjectsFromSession() {
       try {
-        const parsed = JSON.parse(sessionStorage.getItem(SUBJECT_UNLOCK_STORAGE_KEY) || "{}");
+        const parsed = JSON.parse(localStorage.getItem(SUBJECT_UNLOCK_STORAGE_KEY) || "{}");
         return SUBJECTS.reduce((acc, subject) => {
           acc[subject.id] = parsed?.[subject.id] === true;
           return acc;
@@ -2281,6 +2413,7 @@
     let auth = null;
     let db = null;
     let unsubscribeRecordings = null;
+    let unsubscribeLogs = null;
     let portalData = buildPortalData([]);
     let toastTimer = null;
     let sizeGuardInterval = null;
@@ -2354,6 +2487,61 @@
     const copyEmailBtn = document.getElementById("copyEmailBtn");
     const copyPhoneBtn = document.getElementById("copyPhoneBtn");
 
+    const entryScreen = document.getElementById("entryScreen");
+    const enterPortalBtn = document.getElementById("enterPortalBtn");
+    const clearLogsBtn = document.getElementById("clearLogsBtn");
+
+    // Gateway / Log logic
+    async function logAccess() {
+      if (!db) return;
+      try {
+        await addDoc(collection(db, "access_logs"), {
+          userAgent: navigator.userAgent,
+          time: new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }),
+          timestamp: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Log error", e);
+      }
+    }
+
+    enterPortalBtn.addEventListener("click", () => {
+      entryScreen.classList.remove("open");
+      setTimeout(() => entryScreen.hidden = true, 300);
+      logAccess();
+      showToast("Welcome to the Student Portal", "success");
+    });
+
+    // View Count Analytics Logic
+    document.addEventListener("click", (event) => {
+      const watchBtn = event.target.closest(".watch-btn:not(.disabled)");
+      if (watchBtn && watchBtn.dataset.lessonId && db) {
+        updateDoc(doc(db, "recordings", watchBtn.dataset.lessonId), {
+          views: increment(1)
+        }).catch(() => {});
+      }
+    });
+
+    // Clear Logs Logic
+    async function clearAllLogs() {
+      if (!state.isAdmin || !db) return;
+      const confirmed = confirm("සියලුම Access Logs මකා දමන්නද? (මෙය නැවත ආපසු හැරවිය නොහැක)");
+      if (!confirmed) return;
+      
+      try {
+        const logsSnap = await getDocs(collection(db, "access_logs"));
+        const batch = writeBatch(db);
+        logsSnap.forEach((docSnap) => {
+          batch.delete(docSnap.ref);
+        });
+        await batch.commit();
+        showToast("All access logs cleared.", "success");
+      } catch (e) {
+        console.error("Clear logs error", e);
+        showToast("Failed to clear logs. Firestore network error.", "error");
+      }
+    }
+
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, (char) => ({
         "&": "&amp;",
@@ -2396,7 +2584,7 @@
 
     function persistUnlockedSubjects() {
       try {
-        sessionStorage.setItem(
+        localStorage.setItem(
           SUBJECT_UNLOCK_STORAGE_KEY,
           JSON.stringify(state.unlockedSubjects)
         );
@@ -2629,6 +2817,7 @@
         thumbVideoId: String(data?.thumbVideoId ?? "").trim(),
         customThumbnail: String(data?.customThumbnail ?? "").trim(),
         published: data?.published !== false,
+        views: Number(data?.views || 0),
         createdAt: data?.createdAt?.toMillis?.() || 0
       };
     }
@@ -2852,7 +3041,8 @@
           <a class="watch-btn"
             href="${escapeHtml(lesson.url)}"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+            data-lesson-id="${escapeHtml(lesson.id)}">
             <span>${buttonText}</span>
             <span>↗</span>
           </a>
@@ -2904,8 +3094,9 @@
             <div class="meta-row">
               <span class="meta-pill">📚 ${escapeHtml(subject.name)}</span>
               <span class="meta-pill">📁 ${escapeHtml(lesson.type)}</span>
+              <span class="meta-pill">👁️ ${lesson.views || 0} Views</span>
               <span class="meta-pill">${lesson.published ? "👁️ Public" : "🕶️ Draft"}</span>
-              ${lesson.customThumbnail ? `<span class="meta-pill">🖼️ Custom Thumb</span>` : ""}
+              ${lesson.customThumbnail ? `<span class="meta-pill">🖼️ Custom</span>` : ""}
             </div>
 
             <h3 class="card-title" data-original-title="${escapeHtml(lesson.title)}">
@@ -3580,7 +3771,8 @@
         url: adminUrl.value.trim(),
         thumbVideoId: adminThumbVideoId.value.trim(),
         customThumbnail: finalCustomThumbnail.trim(),
-        published: adminPublished.value === "true"
+        published: adminPublished.value === "true",
+        views: 0 // New recordings start with 0 views
       };
 
       if (!payload.subjectId || !payload.unit || !payload.type || !payload.title) {
@@ -3607,6 +3799,11 @@
 
       try {
         if (editId) {
+          // preserve views count when updating
+          const existingLesson = findLesson(subjectId, editId);
+          if (existingLesson) {
+             payload.views = existingLesson.lesson.views || 0;
+          }
           await updateRecordingInCloud(editId, payload);
           rerenderPortal(subjectId);
           resetAdminForm(true);
@@ -3673,6 +3870,51 @@
       }
     }
 
+    // New Function to safely bind the logs listener
+    function startLogsListener() {
+      if (!db || !state.isAdmin) return;
+      if (unsubscribeLogs) {
+        unsubscribeLogs();
+      }
+      const q = query(collection(db, "access_logs"), limit(100));
+      unsubscribeLogs = onSnapshot(q, (snap) => {
+        const logsArray = [];
+        snap.forEach(d => logsArray.push(d.data())); // <-- Fixed logsArray.push() here
+        
+        // Sort locally to prevent Firestore 'Missing Index' errors causing silent fails
+        logsArray.sort((a, b) => {
+          const tA = a.timestamp && typeof a.timestamp.toMillis === 'function' ? a.timestamp.toMillis() : 0;
+          const tB = b.timestamp && typeof b.timestamp.toMillis === 'function' ? b.timestamp.toMillis() : 0;
+          return tB - tA;
+        });
+
+        // Calculate unique devices
+        const uniqueDevices = new Set(logsArray.map(d => d.userAgent).filter(Boolean));
+        const uniqueCountEl = document.getElementById("uniqueDeviceCount");
+        if (uniqueCountEl) {
+           uniqueCountEl.textContent = `Unique Devices: ${uniqueDevices.size}`;
+        }
+
+        const html = [];
+        logsArray.forEach(data => {
+          html.push(`<div class="log-item"><small>${escapeHtml(data.time || "Just now")}</small><span>${escapeHtml(data.userAgent || "Unknown Device")}</span></div>`);
+        });
+        
+        const container = document.getElementById("adminLogsContainer");
+        if (container) {
+          container.innerHTML = html.length 
+            ? html.join("") 
+            : '<div style="padding:16px;text-align:center;color:var(--muted);">No logs yet.</div>';
+        }
+      }, (err) => {
+        console.error("Logs error:", err);
+        const container = document.getElementById("adminLogsContainer");
+        if (container) {
+          container.innerHTML = '<div style="padding:16px;text-align:center;color:#ef4444;">Failed to load logs. (Check Firestore Rules)</div>';
+        }
+      });
+    }
+
     async function syncAdminStateFromUser(user) {
       const previousAdminState = state.isAdmin;
 
@@ -3691,6 +3933,14 @@
 
       if (!state.isAdmin) {
         resetAdminForm(true);
+        if (unsubscribeLogs) unsubscribeLogs();
+        const container = document.getElementById("adminLogsContainer");
+        if (container) {
+          container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);">Logs loading...</div>';
+        }
+      } else {
+        // Admin confirmed via token, start logs
+        startLogsListener();
       }
 
       if (previousAdminState !== state.isAdmin) {
@@ -3776,12 +4026,15 @@
           adminPasswordInput.value
         );
 
-        const tokenResult = await getIdTokenResult(credential.user, true);
-        const hasAdminClaim = !!tokenResult.claims?.[ADMIN_REQUIRED_CLAIM];
-
+        // We set to true locally immediately to open UI
         state.isAdmin = true;
         state.guardTriggered = false;
         persistAdminUnlockFlag();
+        
+        // Force start log listener immediately to avoid race conditions 
+        // with the token check in syncAdminStateFromUser
+        startLogsListener();
+        
         rerenderPortal(state.activeSubject);
         closeAuthModal();
         resetAdminForm(true);
@@ -3926,6 +4179,40 @@
             showToast("Cloud read failed. Fallback view active.", "error", 3400);
           }
         );
+
+        // Listen to Notice Board Changes
+        onSnapshot(doc(db, "settings", "notice"), (docSnap) => {
+            const data = docSnap.data();
+            const banner = document.getElementById("noticeBanner");
+            const textDisplay = document.getElementById("noticeTextDisplay");
+            const adminText = document.getElementById("adminNoticeText");
+            const adminActive = document.getElementById("adminNoticeActive");
+
+            if (data && data.active && data.text) {
+                textDisplay.textContent = data.text;
+                banner.hidden = false;
+            } else {
+                banner.hidden = true;
+            }
+
+            if (adminText) adminText.value = data?.text || "";
+            if (adminActive) adminActive.value = data?.active ? "true" : "false";
+        });
+
+        // Handle Notice Form Submit
+        document.getElementById("noticeForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!state.isAdmin || !db) return;
+            const text = document.getElementById("adminNoticeText").value.trim();
+            const active = document.getElementById("adminNoticeActive").value === "true";
+            try {
+                await setDoc(doc(db, "settings", "notice"), { text, active });
+                showToast("Notice updated successfully!", "success");
+            } catch (error) {
+                showToast("Failed to update notice.", "error");
+            }
+        });
+
       } catch (error) {
         console.error(error);
         state.cloudMode = "error";
@@ -3984,6 +4271,10 @@
       cancelEditBtn.addEventListener("click", () => resetAdminForm());
       clearAdminFormBtn.addEventListener("click", () => resetAdminForm());
       resetPortalBtn.addEventListener("click", resetPortalToDefault);
+      
+      if (clearLogsBtn) {
+          clearLogsBtn.addEventListener("click", clearAllLogs);
+      }
 
       mobileOpenAdminPanel.addEventListener("click", () => {
         openAdminPanel();
@@ -4066,6 +4357,9 @@
     window.addEventListener("beforeunload", () => {
       if (typeof unsubscribeRecordings === "function") {
         unsubscribeRecordings();
+      }
+      if (typeof unsubscribeLogs === "function") {
+        unsubscribeLogs();
       }
       if (sizeGuardInterval) clearInterval(sizeGuardInterval);
       if (debuggerGuardInterval) clearInterval(debuggerGuardInterval);
